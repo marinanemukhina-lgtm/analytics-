@@ -1502,9 +1502,11 @@ function exportPDF(){
 // MODE 3: AI CHAT (GigaChat)
 // ══════════════════════════════════════════
 
-// ── Cloudflare Worker URL ──────────────────
-// После деплоя gigachat-worker.js замените на ваш реальный URL:
-const PROXY_URL = 'https://gigachat-proxy.marina-nemukhina.workers.dev';
+// ── URL вашего прокси-сервера ──────────────
+// После деплоя proxy.py на VPS замените IP на ваш:
+//   HTTP (без домена):  http://ВАШ-IP:8000
+//   HTTPS (с доменом):  https://ВАШ-ДОМЕН.ru
+const PROXY_URL = 'http://5.42.116.158:8000';
 
 // ── Токен-кэш (авто-обновление каждые 25 мин) ──
 let gcAccessToken = null;
