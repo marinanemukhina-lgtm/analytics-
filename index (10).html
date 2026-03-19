@@ -1,0 +1,1921 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Аналитическая платформа — Греков В.К.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=JetBrains+Mono:wght@300;400;500&family=Raleway:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+--bg:#030C1A;--card:rgba(8,18,42,.85);--inp:rgba(12,24,52,.9);
+--brd:rgba(70,100,180,.12);--brd2:rgba(120,150,220,.25);
+--gold:#C9A84C;--gold2:#FFD700;--goldd:rgba(201,168,76,.15);
+--grn:#4CAF7C;--grnd:rgba(76,175,124,.12);
+--ylw:#E8B84C;--ylwd:rgba(232,184,76,.12);
+--red:#C75050;--redd:rgba(199,80,80,.12);
+--txt:#c8d0e8;--dim:#5a6a90;--brt:#e8eef8;
+--ext:#7E8FC8;--int:#8EAED8;
+--fd:'Cormorant Garamond',Georgia,serif;
+--fb:'Raleway',sans-serif;
+--fm:'JetBrains Mono',monospace;
+/* iOS safe area */
+--sat:env(safe-area-inset-top,0px);
+--sab:env(safe-area-inset-bottom,0px);
+--sal:env(safe-area-inset-left,0px);
+--sar:env(safe-area-inset-right,0px);
+}
+*{margin:0;padding:0;box-sizing:border-box;
+  /* iOS: make all taps responsive */
+  -webkit-tap-highlight-color:rgba(201,168,76,.15);
+}
+html{scroll-behavior:smooth;background:var(--bg);
+  /* iOS: prevent text size adjustment */
+  -webkit-text-size-adjust:100%;
+}
+body{font-family:var(--fb);color:var(--txt);background:var(--bg);min-height:100vh;min-height:100dvh;line-height:1.6;overflow-x:hidden;
+  /* iOS safe area padding */
+  padding-top:var(--sat);
+  padding-left:var(--sal);
+  padding-right:var(--sar);
+  padding-bottom:var(--sab);
+}
+body::before{content:'';position:fixed;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(ellipse at 20% 20%,rgba(40,60,140,.08) 0%,transparent 60%),radial-gradient(ellipse at 80% 80%,rgba(160,130,60,.04) 0%,transparent 50%);z-index:-1}
+
+/* ═══ iOS GLOBAL TOUCH FIX ═══ */
+button,
+[onclick],
+.tab,.ob,.mode-btn,.calc-btn,.rec-btn,.dic-btn,.chat-preset,.chat-send,.add-obj-btn,.pdf-btn,.obj-del,
+label,
+input[type="radio"],
+input[type="checkbox"],
+a{
+  cursor:pointer;
+  touch-action:manipulation;
+  -webkit-user-select:none;
+  user-select:none;
+}
+/* Prevent iOS double-tap zoom on interactive elements */
+input,select,textarea{
+  touch-action:manipulation;
+  font-size:16px!important; /* Prevents Safari auto-zoom on focus */
+}
+
+.ctn{max-width:1320px;margin:0 auto;padding:0 20px}
+.hdr{padding:32px 0 12px;text-align:center;animation:fd .8s ease-out}
+@keyframes fd{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fu{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.logo{font-family:var(--fm);font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--gold);opacity:.7;margin-bottom:8px}
+.ttl{font-family:var(--fd);font-size:clamp(26px,4vw,44px);font-weight:300;color:var(--brt);letter-spacing:2px}
+.ttl em{font-style:italic;color:var(--gold);font-weight:400}
+.sub{font-size:13px;font-weight:300;color:var(--dim);letter-spacing:.5px;max-width:600px;margin:4px auto 0}
+.qb{margin:18px auto 0;padding:12px 22px;border-left:2px solid var(--goldd);max-width:460px;text-align:left}
+.qb .qt{font-family:var(--fd);font-size:14px;font-style:italic;color:var(--gold);opacity:.8;line-height:1.5}
+.qb .qa{font-family:var(--fm);font-size:9px;color:var(--dim);letter-spacing:2px;margin-top:4px;text-transform:uppercase}
+
+/* MODE SWITCH */
+.mode-sw{display:flex;justify-content:center;gap:6px;margin:24px 0 0;flex-wrap:wrap}
+.mode-btn{font-family:var(--fm);font-size:11px;letter-spacing:1.5px;padding:12px 28px;border-radius:12px 12px 0 0;cursor:pointer;background:rgba(8,18,42,.3);border:1px solid var(--brd);border-bottom:none;color:var(--dim);transition:all .25s;text-transform:uppercase;
+  /* iOS touch */
+  touch-action:manipulation;-webkit-user-select:none;user-select:none;
+  min-height:44px;display:flex;align-items:center;justify-content:center;
+}
+.mode-btn.act{background:var(--card);color:var(--gold);border-color:rgba(201,168,76,.25)}
+.mode-btn:hover:not(.act){color:var(--txt);background:rgba(8,18,42,.5)}
+/* iOS: active state for instant visual feedback */
+.mode-btn:active{opacity:.7;transform:scale(.97)}
+
+/* MAIN CONTAINER */
+.main{background:var(--card);border:1px solid var(--brd);border-radius:0 0 20px 20px;padding:24px;backdrop-filter:blur(16px);animation:fu .7s ease-out .1s both}
+.mpane{display:none}.mpane.act{display:block}
+.pane{display:none}.pane.act{display:block}
+
+/* INNER TABS */
+.tabs{display:flex;gap:3px;margin:0 0 20px;flex-wrap:wrap}
+.tab{font-family:var(--fm);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;padding:8px 16px;border-radius:8px;cursor:pointer;background:rgba(10,20,44,.5);border:1px solid var(--brd);color:var(--dim);transition:all .2s;
+  /* iOS touch */
+  touch-action:manipulation;-webkit-user-select:none;user-select:none;
+  min-height:44px;display:flex;align-items:center;
+}
+.tab.act{background:rgba(201,168,76,.08);color:var(--gold);border-color:rgba(201,168,76,.2)}
+.tab:active{opacity:.7;transform:scale(.97)}
+
+/* SECTION HEADERS */
+.sh{display:flex;align-items:center;gap:10px;margin:20px 0 14px}.sh:first-child{margin-top:0}
+.sh .dot{width:5px;height:5px;border-radius:2px;flex-shrink:0}
+.sh .sl{font-family:var(--fm);font-size:9px;letter-spacing:2.5px;text-transform:uppercase;white-space:nowrap}
+.sh .ln{flex:1;height:1px;background:var(--brd)}
+.sh.ext .dot,.sh.ext2 .dot{background:var(--ext)}.sh.ext .sl,.sh.ext2 .sl{color:var(--ext)}
+.sh.int .dot{background:var(--int)}.sh.int .sl{color:var(--int)}
+.sh.fin .dot{background:var(--gold)}.sh.fin .sl{color:var(--gold)}
+.sh.unc .dot{background:var(--ylw)}.sh.unc .sl{color:var(--ylw)}
+.sh.com .dot{background:var(--grn)}.sh.com .sl{color:var(--grn)}
+.sh.bld .dot{background:#CC8844}.sh.bld .sl{color:#CC8844}
+
+/* INPUT GRID */
+.igrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.ig{margin-bottom:0}
+.il{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
+.il .nm{font-size:11px;font-weight:400;color:var(--txt);letter-spacing:.3px}
+.il .vl{font-family:var(--fm);font-size:11px;font-weight:500;color:var(--brt)}
+.il .ht{font-size:9px;color:var(--dim);font-weight:300}
+
+.dual{display:flex;gap:6px;align-items:center}
+.dual input[type="range"]{flex:1}
+.nbox{width:80px;background:var(--inp);border:1px solid var(--brd);border-radius:6px;padding:5px 7px;color:var(--brt);font-family:var(--fm);font-size:16px!important;outline:none;text-align:right;transition:border-color .2s;
+  min-height:44px;
+}
+.nbox:focus{border-color:var(--goldd)}
+input[type="range"]{-webkit-appearance:none;height:3px;background:var(--brd);border-radius:2px;outline:none;cursor:pointer;
+  min-height:44px; /* iOS: bigger touch area */
+  padding:20px 0;
+  margin:-20px 0;
+  background-clip:content-box;
+}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:6px;background:var(--gold);border:1px solid rgba(201,168,76,.4);cursor:pointer;transition:transform .15s}
+input[type="range"]::-webkit-slider-thumb:hover{transform:scale(1.2);box-shadow:0 0 10px rgba(201,168,76,.3)}
+input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.3);box-shadow:0 0 16px rgba(201,168,76,.4)}
+.ni{width:100%;background:var(--inp);border:1px solid var(--brd);border-radius:7px;padding:10px 12px;color:var(--brt);font-family:var(--fm);font-size:16px!important;outline:none;transition:border-color .2s;
+  min-height:44px;
+}
+.ni:focus{border-color:var(--goldd)}.ni::placeholder{color:var(--dim);font-size:13px}
+.cr{display:flex;gap:6px;align-items:center}.cr .ni{flex:1}
+.cl{font-family:var(--fm);font-size:10px;color:var(--dim);min-width:40px}
+.ticks{display:flex;justify-content:space-between;font-size:8px;color:var(--dim);margin-top:2px;font-family:var(--fm)}
+
+/* Radio/Check row */
+.rrow{display:flex;gap:12px;margin-top:3px;flex-wrap:wrap}
+.rrow label{font-family:var(--fm);font-size:10px;color:var(--dim);cursor:pointer;display:flex;align-items:center;gap:5px;
+  /* iOS: bigger touch target for labels */
+  min-height:44px;padding:4px 8px;
+  touch-action:manipulation;-webkit-user-select:none;user-select:none;
+}
+.rrow label input[type="radio"],
+.rrow label input[type="checkbox"]{
+  width:20px;height:20px;
+  accent-color:var(--gold);
+}
+.opt3{display:flex;gap:4px;margin-top:3px;flex-wrap:wrap}
+.opt3 .ob{font-family:var(--fm);font-size:9px;padding:4px 10px;border-radius:5px;cursor:pointer;background:rgba(10,20,44,.5);border:1px solid var(--brd);color:var(--dim);transition:all .2s;
+  /* iOS touch */
+  touch-action:manipulation;-webkit-user-select:none;user-select:none;
+  min-height:44px;display:flex;align-items:center;justify-content:center;
+}
+.opt3 .ob.act{background:rgba(201,168,76,.1);color:var(--gold);border-color:rgba(201,168,76,.25)}
+.opt3 .ob:active{opacity:.7;transform:scale(.96)}
+
+.calc-btn{display:inline-flex;align-items:center;gap:8px;margin-top:24px;padding:14px 36px;background:linear-gradient(135deg,rgba(201,168,76,.15),rgba(201,168,76,.05));border:1px solid rgba(201,168,76,.3);border-radius:12px;color:var(--gold);font-family:var(--fm);font-size:11px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;transition:all .3s;
+  /* iOS touch */
+  touch-action:manipulation;-webkit-user-select:none;user-select:none;
+  min-height:52px;
+}
+.calc-btn:hover{background:linear-gradient(135deg,rgba(201,168,76,.25),rgba(201,168,76,.1));border-color:var(--gold);box-shadow:0 0 30px rgba(201,168,76,.1)}
+.calc-btn:active{opacity:.7;transform:scale(.97)}
+
+/* RESULTS */
+.res{margin-top:28px}
+.rc{background:rgba(6,14,36,.6);border:1px solid var(--brd);border-radius:14px;padding:22px;margin-bottom:16px;opacity:0;transform:translateY(14px);transition:all .5s}
+.rc.vis{opacity:1;transform:translateY(0)}
+.ct{font-family:var(--fm);font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--dim);margin-bottom:16px}
+.dlr-d{text-align:center;padding:14px 0}
+.dlr-n{font-family:var(--fd);font-size:64px;font-weight:700;line-height:1;margin-bottom:6px;transition:color .4s}
+.dlr-n.g{color:var(--grn)}.dlr-n.y{color:var(--ylw)}.dlr-n.r{color:var(--red)}
+.dlr-z{font-family:var(--fm);font-size:12px;letter-spacing:2px;margin-bottom:12px}
+.dlr-e{font-size:12px;color:var(--txt);line-height:1.7;max-width:520px;margin:0 auto}
+.dlr-f{margin:16px auto 0;padding:10px 14px;background:rgba(10,14,36,.5);border:1px solid var(--brd);border-radius:8px;font-family:var(--fm);font-size:10px;color:var(--dim);line-height:2;text-align:left;max-width:520px}
+.plane-c{position:relative;width:100%;aspect-ratio:1.5;max-height:380px}
+.plane-c canvas{width:100%;height:100%;border-radius:8px}
+.mg{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.mb{background:rgba(10,18,40,.5);border:1px solid var(--brd);border-radius:10px;padding:12px;text-align:center}
+.mb .mv{font-family:var(--fd);font-size:24px;font-weight:600;color:var(--brt);margin-bottom:2px}
+.mb .mn{font-family:var(--fm);font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim)}
+.scg{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:700px){.scg{grid-template-columns:1fr}}
+.scc{border-radius:10px;padding:16px;text-align:center}
+.scc.base{background:var(--ylwd);border:1px solid rgba(232,184,76,.2)}
+.scc.bull{background:var(--grnd);border:1px solid rgba(76,175,124,.2)}
+.scc.bear{background:var(--redd);border:1px solid rgba(199,80,80,.2)}
+.scc .sl{font-family:var(--fm);font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px}
+.scc.base .sl{color:var(--ylw)}.scc.bull .sl{color:var(--grn)}.scc.bear .sl{color:var(--red)}
+.scc .sv{font-family:var(--fd);font-size:28px;font-weight:600;color:var(--brt);margin-bottom:3px}
+.scc .sd{font-size:10px;color:var(--dim);line-height:1.5}
+
+/* COMPARISON TABLE */
+.cmp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.cmp-card{background:rgba(10,18,40,.4);border:1px solid var(--brd);border-radius:12px;padding:16px;transition:border-color .3s}
+.cmp-card.best{border-color:rgba(76,175,124,.35);background:rgba(76,175,124,.04)}
+.cmp-card .cc-name{font-family:var(--fb);font-size:13px;font-weight:500;color:var(--brt);margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.cmp-card .cc-score{font-family:var(--fm);font-size:9px;letter-spacing:1px;color:var(--dim);margin-bottom:6px}
+.cmp-card .cc-bar{height:4px;background:rgba(20,30,60,.6);border-radius:2px;overflow:hidden;margin-bottom:8px}
+.cmp-card .cc-fill{height:100%;border-radius:2px;transition:width .5s}
+.cmp-card .cc-row{font-family:var(--fm);font-size:9px;color:var(--dim);line-height:1.8}
+.cmp-card .cc-row b{color:var(--brt);font-weight:500}
+
+/* TABLE */
+.ptable{width:100%;border-collapse:collapse;font-size:11px}
+.ptable th{font-family:var(--fm);font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);padding:8px 10px;text-align:left;border-bottom:1px solid var(--brd)}
+.ptable td{padding:8px 10px;border-bottom:1px solid rgba(70,100,180,.06);color:var(--txt)}
+.ptable .num{font-family:var(--fm);text-align:right;color:var(--brt);font-size:10px}
+.ptable .pos{color:var(--grn)}.ptable .neg{color:var(--red)}
+
+.bi-wrap{display:flex;align-items:center;justify-content:center;gap:24px;flex-wrap:wrap}
+.bi-disc{width:120px;height:120px;border-radius:50%;transition:transform .6s}
+.bi-disc .inner{width:100%;height:100%;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;border:2px solid var(--goldd);background:radial-gradient(circle at 40% 35%,rgba(201,168,76,.12),rgba(10,14,36,.8))}
+.bi-disc .bv{font-family:var(--fd);font-size:32px;font-weight:700;color:var(--gold)}
+.bi-disc .bl{font-family:var(--fm);font-size:8px;letter-spacing:2px;color:var(--dim);text-transform:uppercase}
+.bi-bar{flex:1;min-width:180px;max-width:350px}
+.bi-track{height:6px;background:rgba(20,30,60,.6);border-radius:3px;position:relative;overflow:hidden;margin-bottom:6px}
+.bi-fext{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,var(--ext),transparent);border-radius:3px 0 0 3px;transition:width .5s}
+.bi-fint{position:absolute;right:0;top:0;bottom:0;background:linear-gradient(-90deg,var(--int),transparent);border-radius:0 3px 3px 0;transition:width .5s}
+.bi-labels{display:flex;justify-content:space-between;font-family:var(--fm);font-size:9px;letter-spacing:1px}
+.bi-labels .el{color:var(--ext)}.bi-labels .il2{color:var(--int)}
+
+/* DICTAPHONE */
+.dic-wrap{display:flex;flex-direction:column;gap:16px}
+.dic-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.rec-btn{width:64px;height:64px;border-radius:50%;border:3px solid var(--red);background:rgba(199,80,80,.1);color:var(--red);font-size:24px;cursor:pointer;transition:all .3s;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  /* iOS touch */
+  touch-action:manipulation;-webkit-user-select:none;user-select:none;
+}
+.rec-btn:hover{background:rgba(199,80,80,.2);box-shadow:0 0 20px rgba(199,80,80,.2)}
+.rec-btn:active{opacity:.7;transform:scale(.93)}
+.rec-btn.recording{background:var(--red);color:white;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(199,80,80,.4)}50%{box-shadow:0 0 0 12px rgba(199,80,80,0)}}
+.rec-btn.recording:hover{background:rgba(199,80,80,.8)}
+.rec-info{flex:1}
+.rec-status{font-family:var(--fm);font-size:11px;letter-spacing:1px;margin-bottom:4px}
+.rec-status.idle{color:var(--dim)}.rec-status.live{color:var(--red)}.rec-status.done{color:var(--grn)}
+.rec-timer{font-family:var(--fm);font-size:24px;color:var(--brt);font-weight:300}
+.rec-wave{height:40px;display:flex;align-items:center;gap:2px;margin-top:8px}
+.rec-wave span{width:3px;background:var(--red);border-radius:2px;transition:height .1s;height:4px}
+.dic-transcript{background:rgba(10,18,40,.5);border:1px solid var(--brd);border-radius:12px;padding:16px;min-height:120px;max-height:300px;overflow-y:auto;font-size:13px;line-height:1.8;color:var(--txt);
+  -webkit-overflow-scrolling:touch; /* iOS smooth scroll */
+}
+.dic-transcript::-webkit-scrollbar{width:4px}.dic-transcript::-webkit-scrollbar-thumb{background:var(--brd);border-radius:2px}
+.dic-transcript .interim{color:var(--dim);font-style:italic}
+.dic-transcript .timestamp{font-family:var(--fm);font-size:9px;color:var(--gold);margin-right:6px}
+.dic-actions{display:flex;gap:8px;flex-wrap:wrap}
+.dic-btn{padding:10px 18px;border-radius:10px;font-family:var(--fm);font-size:10px;letter-spacing:1px;cursor:pointer;transition:all .2s;text-transform:uppercase;border:1px solid var(--brd);background:rgba(10,20,44,.5);color:var(--dim);
+  /* iOS touch */
+  touch-action:manipulation;-webkit-user-select:none;user-select:none;
+  min-height:44px;display:flex;align-items:center;justify-content:center;
+}
+.dic-btn:hover{color:var(--brt);border-color:var(--brd2)}
+.dic-btn:active{opacity:.7;transform:scale(.96)}
+.dic-btn.primary{background:rgba(201,168,76,.08);border-color:rgba(201,168,76,.25);color:var(--gold)}
+.dic-btn.primary:hover{background:rgba(201,168,76,.15);border-color:var(--gold)}
+.dic-btn:disabled{opacity:.3;cursor:not-allowed}
+.dic-analysis{background:rgba(10,18,40,.5);border:1px solid var(--brd);border-radius:12px;padding:18px;font-size:12px;line-height:1.8;color:var(--txt);display:none}
+.dic-analysis.show{display:block;animation:fu .5s ease-out}
+.dic-analysis h4{font-family:var(--fm);font-size:10px;letter-spacing:2px;color:var(--gold);text-transform:uppercase;margin:12px 0 6px}
+.dic-analysis h4:first-child{margin-top:0}
+.dic-analysis ul{margin:0 0 8px 16px;color:var(--txt)}
+.dic-analysis li{margin-bottom:4px}
+.dic-sessions{margin-top:12px}
+.dic-session{background:rgba(6,14,36,.4);border:1px solid var(--brd);border-radius:10px;padding:12px;margin-bottom:8px;cursor:pointer;transition:border-color .2s;
+  touch-action:manipulation;-webkit-user-select:none;user-select:none;
+  min-height:44px;
+}
+.dic-session:hover{border-color:var(--brd2)}
+.dic-session:active{opacity:.7}
+.dic-session .ds-title{font-family:var(--fm);font-size:10px;color:var(--gold);letter-spacing:1px}
+.dic-session .ds-preview{font-size:11px;color:var(--dim);margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.ftr{text-align:center;padding:36px 20px 24px;padding-bottom:calc(24px + var(--sab))}
+.ftr .cp{font-family:var(--fm);font-size:9px;color:var(--dim);letter-spacing:2px}
+.ftr .ds{font-size:9px;color:var(--dim);max-width:580px;margin:8px auto 0;line-height:1.6;opacity:.5}
+#toast{position:fixed;bottom:30px;bottom:calc(30px + var(--sab));left:50%;transform:translateX(-50%) translateY(80px);background:var(--card);border:1px solid var(--goldd);color:var(--gold);font-family:var(--fm);font-size:11px;padding:10px 20px;border-radius:8px;opacity:0;transition:all .3s;z-index:100;backdrop-filter:blur(16px)}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* COMPARE MODE */
+.obj-row{background:rgba(6,14,36,.5);border:1px solid var(--brd);border-radius:12px;padding:18px;margin-bottom:14px;position:relative}
+.obj-row .obj-num{font-family:var(--fm);font-size:10px;letter-spacing:2px;color:var(--gold);text-transform:uppercase;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+.obj-row .obj-del{font-size:16px;cursor:pointer;color:var(--dim);transition:color .2s;background:none;border:none;padding:8px 12px;
+  touch-action:manipulation;min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;
+}
+.obj-row .obj-del:hover{color:var(--red)}
+.obj-row .obj-del:active{opacity:.7;transform:scale(.9)}
+.add-obj-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:10px;background:rgba(201,168,76,.06);border:1px dashed rgba(201,168,76,.25);color:var(--gold);font-family:var(--fm);font-size:10px;letter-spacing:1.5px;cursor:pointer;transition:all .2s;margin:10px 0;
+  touch-action:manipulation;-webkit-user-select:none;user-select:none;
+  min-height:48px;
+}
+.add-obj-btn:hover{background:rgba(201,168,76,.12);border-style:solid}
+.add-obj-btn:active{opacity:.7;transform:scale(.97)}
+.cmp-table{width:100%;border-collapse:collapse;font-size:11px}
+.cmp-table th{font-family:var(--fm);font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);padding:10px;text-align:center;border-bottom:1px solid var(--brd);position:sticky;top:0;background:rgba(6,14,36,.95)}
+.cmp-table th:first-child{text-align:left}
+.cmp-table td{padding:10px;border-bottom:1px solid rgba(70,100,180,.05);text-align:center;font-family:var(--fm);font-size:11px;color:var(--txt)}
+.cmp-table td:first-child{text-align:left;font-family:var(--fb);color:var(--dim);font-size:10px}
+.cmp-table tr:hover td{background:rgba(201,168,76,.02)}
+.cmp-table .winner{color:var(--grn);font-weight:600}
+.cmp-table .loser{color:var(--red);opacity:.7}
+.cmp-verdict{margin-top:20px;padding:18px;background:rgba(76,175,124,.06);border:1px solid rgba(76,175,124,.2);border-radius:12px;text-align:center}
+.cmp-verdict .cv-title{font-family:var(--fm);font-size:10px;letter-spacing:2px;color:var(--grn);text-transform:uppercase;margin-bottom:8px}
+.cmp-verdict .cv-text{font-size:13px;color:var(--brt);line-height:1.7}
+
+/* PDF button */
+.pdf-btn{display:inline-flex;align-items:center;gap:6px;margin:8px;padding:10px 20px;border-radius:10px;background:rgba(232,184,76,.08);border:1px solid rgba(232,184,76,.2);color:var(--ylw);font-family:var(--fm);font-size:10px;letter-spacing:1.5px;cursor:pointer;transition:all .2s;text-transform:uppercase;
+  touch-action:manipulation;-webkit-user-select:none;user-select:none;
+  min-height:48px;
+}
+.pdf-btn:hover{background:rgba(232,184,76,.15);border-color:var(--ylw)}
+.pdf-btn:active{opacity:.7;transform:scale(.97)}
+
+/* AI CHAT */
+.chat-wrap{display:flex;flex-direction:column;height:calc(100vh - 300px);height:calc(100dvh - 300px);min-height:400px;max-height:700px}
+.chat-key{display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.chat-key .ni{flex:1;min-width:200px;font-size:16px!important}
+.chat-key .key-status{font-family:var(--fm);font-size:9px;letter-spacing:1px}
+.chat-key .key-status.ok{color:var(--grn)}.chat-key .key-status.no{color:var(--red)}
+.chat-msgs{flex:1;overflow-y:auto;padding:12px 0;display:flex;flex-direction:column;gap:12px;
+  -webkit-overflow-scrolling:touch;
+}
+.chat-msgs::-webkit-scrollbar{width:4px}.chat-msgs::-webkit-scrollbar-thumb{background:var(--brd);border-radius:2px}
+.chat-msg{max-width:85%;padding:12px 16px;border-radius:14px;font-size:12px;line-height:1.7;animation:msgIn .3s ease-out}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.chat-msg.user{align-self:flex-end;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.15);color:var(--brt)}
+.chat-msg.ai{align-self:flex-start;background:rgba(10,20,50,.6);border:1px solid var(--brd);color:var(--txt)}
+.chat-msg.ai .ai-label{font-family:var(--fm);font-size:8px;letter-spacing:2px;color:var(--gold);text-transform:uppercase;margin-bottom:6px}
+.chat-msg.system{align-self:center;background:none;border:none;color:var(--dim);font-size:10px;font-style:italic;text-align:center;padding:4px}
+.chat-input{display:flex;gap:8px;margin-top:12px}
+.chat-input .ni{flex:1;border-radius:12px}
+.chat-send{padding:10px 20px;border-radius:12px;background:linear-gradient(135deg,rgba(201,168,76,.2),rgba(201,168,76,.08));border:1px solid rgba(201,168,76,.3);color:var(--gold);font-family:var(--fm);font-size:11px;cursor:pointer;transition:all .2s;white-space:nowrap;
+  touch-action:manipulation;-webkit-user-select:none;user-select:none;
+  min-height:48px;min-width:48px;display:flex;align-items:center;justify-content:center;
+}
+.chat-send:hover{background:linear-gradient(135deg,rgba(201,168,76,.3),rgba(201,168,76,.15));border-color:var(--gold)}
+.chat-send:active{opacity:.7;transform:scale(.96)}
+.chat-send:disabled{opacity:.4;cursor:not-allowed}
+.chat-hint{font-family:var(--fm);font-size:9px;color:var(--dim);margin-top:8px;text-align:center}
+.chat-presets{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.chat-preset{font-family:var(--fm);font-size:9px;padding:6px 12px;border-radius:8px;background:rgba(10,20,44,.5);border:1px solid var(--brd);color:var(--dim);cursor:pointer;transition:all .2s;
+  touch-action:manipulation;-webkit-user-select:none;user-select:none;
+  min-height:44px;display:flex;align-items:center;
+}
+.chat-preset:hover{color:var(--gold);border-color:var(--goldd);background:rgba(201,168,76,.05)}
+.chat-preset:active{opacity:.7;transform:scale(.96)}
+.typing{display:flex;gap:4px;padding:8px 16px}
+.typing span{width:6px;height:6px;border-radius:50%;background:var(--dim);animation:blink 1.4s infinite both}
+.typing span:nth-child(2){animation-delay:.2s}
+.typing span:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:.3}40%{opacity:1}}
+
+/* ═══════════════════════════════════════ */
+/* MOBILE / iPhone RESPONSIVE OVERRIDES   */
+/* ═══════════════════════════════════════ */
+@media(max-width:700px){
+  .igrid{grid-template-columns:1fr}
+  .cmp-grid{grid-template-columns:1fr}
+  .main{padding:16px 12px}
+  .ctn{padding:0 12px}
+  
+  /* Mode switch: 2+3 row layout on small screens */
+  .mode-sw{gap:4px;padding:0 4px}
+  .mode-btn{padding:10px 12px;font-size:9px;letter-spacing:1px;flex:1;min-width:0;
+    border-radius:8px 8px 0 0;
+    min-height:48px;
+  }
+  
+  /* Tabs scroll horizontally */
+  .tabs{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
+    scrollbar-width:none;-ms-overflow-style:none;
+    gap:4px;padding-bottom:4px;
+  }
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{flex-shrink:0;min-height:48px;padding:10px 14px;font-size:9px}
+  
+  /* opt3 buttons bigger on mobile */
+  .opt3{gap:6px}
+  .opt3 .ob{padding:8px 14px;font-size:10px;flex:1;min-height:48px}
+  
+  /* Inputs full width */
+  .nbox{min-height:48px;width:90px;padding:8px 10px}
+  .ni{padding:12px;min-height:48px}
+  
+  /* range thumb bigger on mobile */
+  input[type="range"]::-webkit-slider-thumb{width:28px;height:28px;border-radius:8px}
+  
+  /* Radio labels bigger */
+  .rrow label{min-height:48px;padding:6px 12px;font-size:11px;gap:8px}
+  .rrow label input[type="radio"],
+  .rrow label input[type="checkbox"]{width:22px;height:22px}
+  
+  /* Calc button */
+  .calc-btn{min-height:56px;padding:16px 28px;font-size:10px;width:100%}
+  
+  /* DLR number */
+  .dlr-n{font-size:48px}
+  
+  /* Metric boxes */
+  .mg{grid-template-columns:repeat(2,1fr);gap:6px}
+  .mb{padding:10px 6px}
+  .mb .mv{font-size:18px}
+  
+  /* Comparison cards */
+  .cmp-card{padding:14px}
+  
+  /* Table horizontal scroll */
+  .ptable{font-size:10px}
+  .ptable th,.ptable td{padding:6px 6px;white-space:nowrap}
+  
+  /* Chat */
+  .chat-wrap{height:calc(100vh - 260px);height:calc(100dvh - 260px);min-height:350px;max-height:none}
+  .chat-msg{max-width:92%;font-size:13px}
+  .chat-send{min-width:60px;padding:10px 14px;font-size:10px}
+  .chat-preset{min-height:48px;padding:8px 14px;font-size:10px}
+  
+  /* Dictaphone */
+  .rec-btn{width:72px;height:72px;font-size:28px}
+  .dic-btn{min-height:48px;padding:12px 16px;font-size:10px;flex:1}
+  .dic-actions{gap:6px}
+  
+  /* PDF button */
+  .pdf-btn{min-height:52px;padding:12px 24px;width:100%}
+  
+  /* Add obj button */
+  .add-obj-btn{min-height:52px;width:100%;justify-content:center}
+  
+  /* obj-del */
+  .obj-row .obj-del{min-width:48px;min-height:48px;font-size:20px}
+  
+  /* Balance disc */
+  .bi-disc{width:100px;height:100px}
+  .bi-disc .bv{font-size:26px}
+  .bi-bar{min-width:140px}
+  
+  /* Plane canvas */
+  .plane-c{aspect-ratio:1.2}
+  
+  /* Comparison table */
+  .cmp-table th,.cmp-table td{padding:8px 6px;font-size:10px}
+  
+  /* Header */
+  .ttl{font-size:clamp(22px,5vw,36px)}
+  .qb{padding:10px 16px;margin:12px auto 0}
+  .qb .qt{font-size:13px}
+}
+
+/* Extra small (iPhone SE size) */
+@media(max-width:380px){
+  .mode-btn{font-size:8px;letter-spacing:.5px;padding:8px 6px}
+  .mg{grid-template-columns:1fr 1fr}
+  .mb .mv{font-size:16px}
+  .opt3 .ob{font-size:9px;padding:6px 8px}
+}
+</style>
+</head>
+<body>
+<div class="ctn">
+<header class="hdr">
+<div class="logo">аналитическая платформа</div>
+<h1 class="ttl">Аналитика инвестиционной <em>привлекательности</em></h1>
+<p class="sub">Количественный анализ решений в недвижимости</p>
+<div class="qb"><div class="qt">Цифры честнее букв. Слова можно интерпретировать, чувства — оправдывать. Цифры фиксируют реальность.</div><div class="qa">Владислав Греков</div></div>
+</header>
+
+<!-- MODE SWITCH -->
+<div class="mode-sw">
+<div class="mode-btn act" onclick="switchMode(0)">🏢 Объект</div>
+<div class="mode-btn" onclick="switchMode(1)">🌍 Участок</div>
+<div class="mode-btn" onclick="switchMode(2)">⚖️ Сравнение</div>
+<div class="mode-btn" onclick="switchMode(3)">💬 AI</div>
+<div class="mode-btn" onclick="switchMode(4)">🎙 Диктофон</div>
+</div>
+
+<div class="main">
+
+<!-- ══════════ MODE 0: READY OBJECT ══════════ -->
+<div class="mpane act" id="m0">
+<div class="tabs" id="tabs0"></div>
+<div id="panes0"></div>
+<div style="text-align:center"><button class="calc-btn" onclick="calcObj()">РАССЧИТАТЬ ОБЪЕКТ →</button></div>
+<div class="res" id="resObj"></div>
+</div>
+
+<!-- ══════════ MODE 1: LAND PLOT ══════════ -->
+<div class="mpane" id="m1">
+<div class="tabs" id="tabs1"></div>
+<div id="panes1"></div>
+<div style="text-align:center"><button class="calc-btn" onclick="calcLand()">РАССЧИТАТЬ УЧАСТОК →</button></div>
+<div class="res" id="resLand"></div>
+</div>
+
+<!-- ══════════ MODE 2: COMPARISON ══════════ -->
+<div class="mpane" id="m2">
+<div class="sh fin"><span class="dot"></span><span class="sl">Сравнение объектов — до 4 вариантов</span><span class="ln"></span></div>
+<div id="cmpObjects"></div>
+<button class="add-obj-btn" onclick="addCmpObj()">+ Добавить объект</button>
+<div style="text-align:center"><button class="calc-btn" onclick="calcCompare()">СРАВНИТЬ →</button></div>
+<div class="res" id="resCmp"></div>
+</div>
+
+<!-- ══════════ MODE 3: AI CHAT ══════════ -->
+<div class="mpane" id="m3">
+<div class="chat-wrap">
+  <div class="sh com"><span class="dot"></span><span class="sl">AI-консультант по недвижимости</span><span class="ln"></span></div>
+  <div class="chat-key">
+    <input type="password" class="ni" id="dsKey" placeholder="Вставьте API-ключ DeepSeek (sk-...)">
+    <button class="calc-btn" style="margin:0;padding:8px 16px;font-size:9px;min-height:48px" onclick="testKey()">Проверить</button>
+    <span class="key-status no" id="keyStatus">⬤ нет ключа</span>
+  </div>
+  <div style="font-size:10px;color:var(--dim);margin-bottom:10px;line-height:1.6">
+    Получите бесплатный ключ на <a href="https://platform.deepseek.com" target="_blank" style="color:var(--gold)">platform.deepseek.com</a> — 5M токенов бесплатно при регистрации.
+  </div>
+  <div class="chat-presets">
+    <div class="chat-preset" onclick="askPreset('Оцени инвестиционную привлекательность квартиры 65м² за 12.5 млн ₽ в центре Ростова')">Оценка квартиры</div>
+    <div class="chat-preset" onclick="askPreset('Что выгоднее построить на участке 10 соток рядом с трассой?')">Что построить на участке</div>
+    <div class="chat-preset" onclick="askPreset('Сравни офис vs торговое помещение для инвестиции в Ростове')">Офис vs торговля</div>
+    <div class="chat-preset" onclick="askPreset('Какой DLR у объекта с доходом 85000₽/мес и ценой 12.5 млн?')">Рассчитай DLR</div>
+  </div>
+  <div class="chat-msgs" id="chatMsgs">
+    <div class="chat-msg system">Задайте вопрос по недвижимости — AI ответит с расчётами и аналитикой</div>
+  </div>
+  <div class="chat-input">
+    <input type="text" class="ni" id="chatIn" placeholder="Задайте вопрос по объекту..." onkeydown="if(event.key==='Enter')sendChat()">
+    <button class="chat-send" id="chatSendBtn" onclick="sendChat()">Отправить</button>
+  </div>
+  <div class="chat-hint">DeepSeek V3 · данные не сохраняются</div>
+</div>
+</div>
+
+<!-- ══════════ MODE 4: DICTAPHONE ══════════ -->
+<div class="mpane" id="m4">
+<div class="dic-wrap">
+  <div class="sh com"><span class="dot"></span><span class="sl">Диктофон — запись и анализ осмотра объекта</span><span class="ln"></span></div>
+
+  <div style="font-size:11px;color:var(--dim);margin-bottom:12px;line-height:1.6">
+    Нажмите запись, говорите — текст появляется в реальном времени. После остановки AI выделит ключевые пожелания, впечатления и требования клиента.
+  </div>
+
+  <div class="dic-controls">
+    <button class="rec-btn" id="recBtn" onclick="toggleRec()">
+      <span id="recIcon">⏺</span>
+    </button>
+    <div class="rec-info">
+      <div class="rec-status idle" id="recStatus">Готов к записи</div>
+      <div class="rec-timer" id="recTimer">00:00</div>
+      <div class="rec-wave" id="recWave"></div>
+    </div>
+  </div>
+
+  <div style="margin:8px 0">
+    <div class="il"><span class="nm">Название записи / адрес объекта</span></div>
+    <input type="text" class="ni" id="dicName" placeholder="Например: ул. Пушкина 15, осмотр с Ивановым">
+  </div>
+
+  <div class="ct" style="margin-top:16px">Транскрипция</div>
+  <div class="dic-transcript" id="dicTranscript">
+    <span style="color:var(--dim);font-style:italic">Здесь появится текст речи в реальном времени...</span>
+  </div>
+
+  <div class="dic-actions">
+    <button class="dic-btn primary" id="analyzeBtn" onclick="analyzeTranscript()" disabled>🤖 Анализ AI</button>
+    <button class="dic-btn" id="copyBtn" onclick="copyTranscript()" disabled>📋 Копировать текст</button>
+    <button class="dic-btn" id="saveBtn" onclick="saveSession()" disabled>💾 Сохранить</button>
+    <button class="dic-btn" onclick="clearDic()">🗑 Очистить</button>
+  </div>
+
+  <div class="dic-analysis" id="dicAnalysis"></div>
+
+  <div class="ct" style="margin-top:24px">Сохранённые записи</div>
+  <div class="dic-sessions" id="dicSessions">
+    <div style="color:var(--dim);font-size:11px;font-style:italic">Пока нет сохранённых записей</div>
+  </div>
+</div>
+</div>
+
+</div>
+
+<footer class="ftr">
+<div class="cp">© 2026 ГРЕКОВ В.К.</div>
+<div class="ds">Данные не являются инвестиционной рекомендацией. Модель описывает позиционирование субъекта внутри собственной системы. Каждый расчёт — индивидуальная фиксация структуры факторов.</div>
+</footer>
+</div>
+<div id="toast"></div>
+
+<script>
+/* ═══════════════════════════════════════
+   Analytical Platform v7.0
+   Core Analytical Engine + iOS Touch Fixes
+   Mode 0: Ready Object | Mode 1: Land Plot
+   ═══════════════════════════════════════ */
+
+// ═══ iOS TOUCH FIX: Add click handlers via addEventListener for iOS Safari ═══
+// iOS Safari sometimes ignores onclick on non-anchor/non-button divs
+document.addEventListener('DOMContentLoaded', function(){
+  // Fix: make all [onclick] divs clickable on iOS by adding touchend fallback
+  document.addEventListener('touchend', function(e){
+    // Ensure tap events fire immediately (no 300ms delay on older iOS)
+  }, {passive:true});
+  
+  // Fix iOS viewport height for chat
+  function setVH(){
+    document.documentElement.style.setProperty('--vh', window.innerHeight * 0.01 + 'px');
+  }
+  setVH();
+  window.addEventListener('resize', setVH);
+  window.addEventListener('orientationchange', function(){setTimeout(setVH,100);});
+});
+
+// ═══ HELPERS ═══
+const $=id=>document.getElementById(id);
+const pC=id=>{const el=$(id);return el?parseFloat(String(el.value).replace(/[^\d.-]/g,''))||0:0;};
+const pV=id=>+($(id)?.value)||0;
+const fmtC=el=>{let r=el.value.replace(/[^\d]/g,'');if(r)el.value=Number(r).toLocaleString('ru-RU');};
+const fM=n=>{if(Math.abs(n)>=1e9)return(n/1e9).toFixed(1)+'B';if(Math.abs(n)>=1e6)return(n/1e6).toFixed(1)+'M';if(Math.abs(n)>=1e3)return(n/1e3).toFixed(0)+'K';return n.toFixed(0);};
+const fR=n=>Math.round(n).toLocaleString('ru-RU');
+const uv=(id,v)=>{const el=$(id);if(el)el.textContent=v;};
+const syncD=(s,t)=>{$(t).value=s.value};
+const syncR=(s,t)=>{$(t).value=s.value};
+const toast=m=>{const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)};
+
+let curMode=0, LR_obj=null, LR_land=null;
+
+function switchMode(n){
+  curMode=n;
+  document.querySelectorAll('.mode-btn').forEach((b,i)=>b.classList.toggle('act',i===n));
+  document.querySelectorAll('.mpane').forEach((p,i)=>p.classList.toggle('act',i===n));
+}
+
+function switchInner(modeId,tabIdx){
+  const tabs=$('tabs'+modeId).querySelectorAll('.tab');
+  const panes=$('panes'+modeId).querySelectorAll('.pane');
+  tabs.forEach((t,i)=>t.classList.toggle('act',i===tabIdx));
+  panes.forEach((p,i)=>p.classList.toggle('act',i===tabIdx));
+}
+
+function dualHTML(id,label,min,max,val,step,suffix,hint){
+  const vid='v_'+id,nid='n_'+id,sid='i_'+id;
+  return `<div class="ig"><div class="il"><span class="nm">${label}</span><span class="vl" id="${vid}">${val}${suffix||''}</span></div>
+  <div class="dual"><input type="range" id="${sid}" min="${min}" max="${max}" value="${val}" step="${step||1}" oninput="syncD(this,'${nid}');uv('${vid}',this.value+'${suffix||''}')"><input type="number" class="nbox" id="${nid}" value="${val}" min="${min}" max="${max}" step="${step||1}" oninput="syncR(this,'${sid}');uv('${vid}',this.value+'${suffix||''}')"></div>
+  ${hint?`<div class="ticks"><span>${hint[0]}</span><span>${hint[1]}</span></div>`:''}</div>`;
+}
+
+function moneyHTML(id,label,placeholder,suffix,hint){
+  return `<div class="ig"><div class="il"><span class="nm">${label}</span>${hint?`<span class="ht">${hint}</span>`:''}</div>
+  <div class="cr"><input type="text" class="ni" id="${id}" placeholder="${placeholder}" oninput="fmtC(this)"><span class="cl">${suffix||'₽'}</span></div></div>`;
+}
+
+function numHTML(id,label,placeholder,suffix){
+  return `<div class="ig"><div class="il"><span class="nm">${label}</span></div>
+  <div class="cr"><input type="text" class="ni" id="${id}" placeholder="${placeholder}"><span class="cl">${suffix||''}</span></div></div>`;
+}
+
+function opt3HTML(name,options){
+  return `<div class="opt3">${options.map((o,i)=>`<div class="ob${i===0?' act':''}" onclick="selOpt(this,'${name}')" data-val="${o.v}">${o.l}</div>`).join('')}</div>`;
+}
+
+function selOpt(el,name){
+  if(!el||!el.parentElement)return;
+  el.parentElement.querySelectorAll('.ob').forEach(b=>b.classList.remove('act'));
+  el.classList.add('act');
+}
+function getOpt(name){
+  const wraps=document.querySelectorAll('.opt3');
+  for(const w of wraps){
+    const first=w.querySelector('.ob');
+    if(first&&first.getAttribute('onclick')&&first.getAttribute('onclick').includes("'"+name+"'")){
+      const act=w.querySelector('.ob.act');
+      return act?act.dataset.val:'';
+    }
+  }
+  return '';
+}
+function getOptVal(containerId, name){
+  const container = $(containerId);
+  if(!container)return '';
+  const wraps = container.querySelectorAll('.opt3');
+  for(const w of wraps){
+    const first=w.querySelector('.ob');
+    if(first&&first.getAttribute('onclick')?.includes(name)){
+      const act=w.querySelector('.ob.act');
+      return act?act.dataset.val:'';
+    }
+  }
+  return '';
+}
+
+function radioVal(name){return document.querySelector(`input[name="${name}"]:checked`)?.value||'0';}
+
+// ══════════════════════════════════════════
+// BUILD MODE 0: READY OBJECT
+// ══════════════════════════════════════════
+function buildObj(){
+  const tabNames=['Объект','Кредит и налоги','Рынок и ресурсы','Коммерция','Характеристики'];
+  $('tabs0').innerHTML=tabNames.map((t,i)=>`<div class="tab${i===0?' act':''}" onclick="switchInner(0,${i})">${t}</div>`).join('');
+
+  $('panes0').innerHTML=`
+  <div class="pane act">
+    <div class="sh fin"><span class="dot"></span><span class="sl">Объект</span><span class="ln"></span></div>
+    <div class="igrid">
+      ${moneyHTML('o_price','Стоимость объекта','12 500 000','₽')}
+      ${numHTML('o_area','Площадь','65','м²')}
+      <div class="ig"><div class="il"><span class="nm">Этаж / Этажность</span></div><div class="cr"><input type="number" class="ni" id="o_floor" placeholder="3" style="width:55px"><span class="cl" style="min-width:10px">/</span><input type="number" class="ni" id="o_floors" placeholder="9" style="width:55px"></div></div>
+      ${numHTML('o_year','Год постройки','2005','год')}
+      ${numHTML('o_name','Название / адрес','ул. Пушкина 15, кв. 42','')}
+    </div>
+    <div class="sh fin"><span class="dot"></span><span class="sl">Доходы и расходы</span><span class="ln"></span></div>
+    <div class="igrid">
+      ${moneyHTML('o_income','Доход / мес','85 000','₽/мес','аренда')}
+      ${moneyHTML('o_expenses','Расходы / мес','15 000','₽/мес','ЖКУ, ремонт')}
+      ${moneyHTML('o_capital','Доступный капитал','5 000 000','₽')}
+      ${dualHTML('o_hor','Горизонт',6,120,36,6,' мес')}
+    </div>
+  </div>
+  <div class="pane">
+    <div class="sh fin"><span class="dot"></span><span class="sl">Ипотека</span><span class="ln"></span></div>
+    <div class="igrid">
+      ${dualHTML('o_dp','Первоначальный взнос',0,100,40,1,'%')}
+      ${dualHTML('o_rate','Ставка по кредиту',0,40,18,0.5,'%')}
+      ${dualHTML('o_term','Срок кредита',12,360,240,12,' мес')}
+    </div>
+    <div class="sh fin"><span class="dot"></span><span class="sl">Налоги и рост</span><span class="ln"></span></div>
+    <div class="igrid">
+      ${dualHTML('o_tax','Налог на имущество / год',0,2,0.3,0.1,'%')}
+      ${dualHTML('o_ndfl','НДФЛ с дохода',0,30,13,1,'%')}
+      ${dualHTML('o_growth','Рост стоимости / год',-10,30,5,1,'%')}
+    </div>
+  </div>
+  <div class="pane">
+    <div class="sh ext"><span class="dot"></span><span class="sl">Рыночные факторы</span><span class="ln"></span></div>
+    <div class="igrid">
+      ${dualHTML('o_liq','Ликвидность локации',0,100,50,1,'',['стагнация','высокий спрос'])}
+      ${dualHTML('o_comp','Конкурентное давление',0,100,50,1,'',['монополия','перенасыщение'])}
+      ${dualHTML('o_vac','Вакантность',0,50,10,1,'%',['все сдано','половина пустует'])}
+      ${dualHTML('o_unc','Неопределённость',0,100,40,1,'',['прозрачно','турбулентность'])}
+    </div>
+    <div class="sh int"><span class="dot"></span><span class="sl">Ресурсы инвестора</span><span class="ln"></span></div>
+    <div class="igrid">
+      ${dualHTML('o_exp','Экспертиза',0,100,50,1,'',['новичок','профессионал'])}
+      ${dualHTML('o_soc','Социальный капитал',0,100,50,1,'',['нет связей','широкая сеть'])}
+      ${dualHTML('o_risk','Готовность к риску',0,100,50,1,'',['консервативно','агрессивно'])}
+    </div>
+  </div>
+  <div class="pane">
+    <div class="sh com"><span class="dot"></span><span class="sl">Коммерческий потенциал</span><span class="ln"></span></div>
+    <div class="igrid">
+      ${dualHTML('o_traf','Пешеходный трафик',0,100,50,1,'',['тупик','центральная улица'])}
+      ${dualHTML('o_facade','Витрина / фасад',0,100,50,1,'',['подвал','панорамная витрина'])}
+      ${dualHTML('o_park','Парковка',0,100,50,1,'',['нет','удобная'])}
+      ${numHTML('o_ceil','Высота потолков','3.0','м')}
+    </div>
+    <div class="igrid" style="margin-top:12px">
+      <div class="ig"><div class="il"><span class="nm">Отдельный вход</span></div><div class="rrow"><label><input type="radio" name="o_entry" value="1" checked> Да</label><label><input type="radio" name="o_entry" value="0"> Нет</label></div></div>
+      <div class="ig"><div class="il"><span class="nm">Вытяжка / вентиляция</span></div><div class="rrow"><label><input type="radio" name="o_vent" value="1" checked> Да</label><label><input type="radio" name="o_vent" value="0"> Нет</label></div></div>
+    </div>
+  </div>
+  <div class="pane">
+    <div class="sh bld"><span class="dot"></span><span class="sl">Состояние и ремонт</span><span class="ln"></span></div>
+    <div class="igrid">
+      <div class="ig"><div class="il"><span class="nm">Состояние ремонта</span></div>
+        <div class="opt3" id="o_repair_wrap"><div class="ob" onclick="selOpt(this,'o_repair')" data-val="none">Без ремонта</div><div class="ob" onclick="selOpt(this,'o_repair')" data-val="cosm">Косметический</div><div class="ob act" onclick="selOpt(this,'o_repair')" data-val="euro">Евроремонт</div><div class="ob" onclick="selOpt(this,'o_repair')" data-val="design">Дизайнерский</div></div></div>
+      <div class="ig"><div class="il"><span class="nm">Тип дома</span></div>
+        <div class="opt3" id="o_house_wrap"><div class="ob" onclick="selOpt(this,'o_house')" data-val="panel">Панель</div><div class="ob act" onclick="selOpt(this,'o_house')" data-val="brick">Кирпич</div><div class="ob" onclick="selOpt(this,'o_house')" data-val="mono">Монолит</div><div class="ob" onclick="selOpt(this,'o_house')" data-val="wood">Дерево</div></div></div>
+      ${dualHTML('o_condition','Общее состояние',0,100,70,1,'',['аварийное','отличное'])}
+    </div>
+    <div class="sh ext"><span class="dot"></span><span class="sl">Юридическая чистота</span><span class="ln"></span></div>
+    <div class="igrid">
+      <div class="ig"><div class="il"><span class="nm">Обременения</span></div><div class="rrow"><label><input type="radio" name="o_encumbrance" value="0" checked> Нет</label><label><input type="radio" name="o_encumbrance" value="1"> Есть</label></div></div>
+      <div class="ig"><div class="il"><span class="nm">Долги по ЖКУ</span></div><div class="rrow"><label><input type="radio" name="o_debts" value="0" checked> Нет</label><label><input type="radio" name="o_debts" value="1"> Есть</label></div></div>
+      <div class="ig"><div class="il"><span class="nm">Кол-во собственников</span></div><div class="cr"><input type="number" class="ni" id="o_owners" placeholder="1" value="1" style="width:80px"></div></div>
+      ${dualHTML('o_legal','Юридическая прозрачность',0,100,80,1,'',['проблемная','идеальная'])}
+    </div>
+    <div class="sh int"><span class="dot"></span><span class="sl">Коммуникации объекта</span><span class="ln"></span></div>
+    <div class="igrid">
+      <div class="ig"><div class="il"><span class="nm">Отопление</span></div>
+        <div class="opt3" id="o_heat_wrap"><div class="ob act" onclick="selOpt(this,'o_heat')" data-val="central">Центральное</div><div class="ob" onclick="selOpt(this,'o_heat')" data-val="auto">Автономное</div><div class="ob" onclick="selOpt(this,'o_heat')" data-val="none">Нет</div></div></div>
+      <div class="ig"><div class="il"><span class="nm">Водоснабжение</span></div>
+        <div class="opt3" id="o_water_wrap"><div class="ob act" onclick="selOpt(this,'o_water')" data-val="central">Центральное</div><div class="ob" onclick="selOpt(this,'o_water')" data-val="well">Скважина</div><div class="ob" onclick="selOpt(this,'o_water')" data-val="none">Нет</div></div></div>
+      <div class="ig"><div class="il"><span class="nm">Газ</span></div><div class="rrow"><label><input type="radio" name="o_gas" value="1" checked> Есть</label><label><input type="radio" name="o_gas" value="0"> Нет</label></div></div>
+      <div class="ig"><div class="il"><span class="nm">Интернет / связь</span></div><div class="rrow"><label><input type="radio" name="o_inet" value="1" checked> Есть</label><label><input type="radio" name="o_inet" value="0"> Нет</label></div></div>
+    </div>
+  </div>`;
+}
+function buildLand(){
+  const tabNames=['Участок','Коммуникации','Застройка','Рынок и ресурсы'];
+  $('tabs1').innerHTML=tabNames.map((t,i)=>`<div class="tab${i===0?' act':''}" onclick="switchInner(1,${i})">${t}</div>`).join('');
+
+  $('panes1').innerHTML=`
+  <div class="pane act">
+    <div class="sh fin"><span class="dot"></span><span class="sl">Земельный участок</span><span class="ln"></span></div>
+    <div class="igrid">
+      ${moneyHTML('l_price','Стоимость участка','3 500 000','₽')}
+      ${numHTML('l_area','Площадь','10','соток')}
+      <div class="ig"><div class="il"><span class="nm">Категория земли</span></div>
+        <div class="opt3" id="l_cat_wrap">
+          <div class="ob act" onclick="selOpt(this,'l_cat')" data-val="comm">Коммерческая</div>
+          <div class="ob" onclick="selOpt(this,'l_cat')" data-val="izhs">ИЖС</div>
+          <div class="ob" onclick="selOpt(this,'l_cat')" data-val="prom">Промышленная</div>
+        </div>
+      </div>
+      ${moneyHTML('l_capital','Доступный капитал','10 000 000','₽')}
+    </div>
+    <div class="sh fin"><span class="dot"></span><span class="sl">Расположение</span><span class="ln"></span></div>
+    <div class="igrid">
+      ${dualHTML('l_dist','Удалённость от центра',0,50,5,1,' км')}
+      ${dualHTML('l_road','Качество подъезда',0,100,60,1,'',['грунтовка','асфальт, магистраль'])}
+      ${dualHTML('l_traf','Проходимость / трафик',0,100,50,1,'',['глухое место','оживлённая точка'])}
+      <div class="ig"><div class="il"><span class="nm">Рельеф</span></div>
+        <div class="opt3" id="l_relief_wrap">
+          <div class="ob act" onclick="selOpt(this,'l_relief')" data-val="flat">Ровный</div>
+          <div class="ob" onclick="selOpt(this,'l_relief')" data-val="slope">Уклон</div>
+          <div class="ob" onclick="selOpt(this,'l_relief')" data-val="complex">Сложный</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pane">
+    <div class="sh ext2"><span class="dot"></span><span class="sl">Коммуникации</span><span class="ln"></span></div>
+    <div class="igrid">
+      <div class="ig"><div class="il"><span class="nm">Электричество</span></div>
+        <div class="opt3" id="l_elec_wrap"><div class="ob act" onclick="selOpt(this,'l_elec')" data-val="on">На участке</div><div class="ob" onclick="selOpt(this,'l_elec')" data-val="near">Рядом</div><div class="ob" onclick="selOpt(this,'l_elec')" data-val="off">Нет</div></div></div>
+      <div class="ig"><div class="il"><span class="nm">Газ</span></div>
+        <div class="opt3" id="l_gas_wrap"><div class="ob act" onclick="selOpt(this,'l_gas')" data-val="on">На участке</div><div class="ob" onclick="selOpt(this,'l_gas')" data-val="near">Рядом</div><div class="ob" onclick="selOpt(this,'l_gas')" data-val="off">Нет</div></div></div>
+      <div class="ig"><div class="il"><span class="nm">Водоснабжение</span></div>
+        <div class="opt3" id="l_water_wrap"><div class="ob act" onclick="selOpt(this,'l_water')" data-val="on">На участке</div><div class="ob" onclick="selOpt(this,'l_water')" data-val="near">Рядом</div><div class="ob" onclick="selOpt(this,'l_water')" data-val="off">Нет</div></div></div>
+      <div class="ig"><div class="il"><span class="nm">Канализация</span></div>
+        <div class="opt3" id="l_sewer_wrap"><div class="ob act" onclick="selOpt(this,'l_sewer')" data-val="on">На участке</div><div class="ob" onclick="selOpt(this,'l_sewer')" data-val="near">Рядом</div><div class="ob" onclick="selOpt(this,'l_sewer')" data-val="off">Нет</div></div></div>
+    </div>
+    <div class="sh fin"><span class="dot"></span><span class="sl">Стоимость подведения</span><span class="ln"></span></div>
+    <div class="igrid">
+      ${moneyHTML('l_comm_cost','Общая стоимость подведения','500 000','₽','если требуется')}
+    </div>
+  </div>
+
+  <div class="pane">
+    <div class="sh bld"><span class="dot"></span><span class="sl">Параметры застройки</span><span class="ln"></span></div>
+    <div class="igrid">
+      ${dualHTML('l_bld_pct','Процент застройки',10,80,40,5,'%')}
+      ${dualHTML('l_floors','Этажность',1,25,3,1,' эт.')}
+      ${dualHTML('l_bld_cost','Стоимость строительства / м²',20000,200000,65000,5000,' ₽')}
+      ${dualHTML('l_bld_months','Срок строительства',3,48,12,1,' мес')}
+    </div>
+    <div class="sh fin"><span class="dot"></span><span class="sl">Финансовые параметры</span><span class="ln"></span></div>
+    <div class="igrid">
+      ${dualHTML('l_rent','Ожидаемая аренда / м² / мес',200,5000,800,50,' ₽')}
+      ${dualHTML('l_sell_m2','Или продажа / м²',30000,300000,90000,5000,' ₽')}
+      ${dualHTML('l_vac','Вакантность',0,50,15,1,'%')}
+      ${dualHTML('l_opex','Операционные расходы / мес',0,500000,50000,5000,' ₽')}
+      ${dualHTML('l_hor','Горизонт оценки',12,120,60,6,' мес')}
+      ${dualHTML('l_growth','Рост стоимости / год',-10,30,5,1,'%')}
+    </div>
+  </div>
+
+  <div class="pane">
+    <div class="sh ext"><span class="dot"></span><span class="sl">Рыночные факторы</span><span class="ln"></span></div>
+    <div class="igrid">
+      ${dualHTML('l_liq','Ликвидность локации',0,100,50,1,'',['стагнация','высокий спрос'])}
+      ${dualHTML('l_comp','Конкурентное давление',0,100,50,1,'',['монополия','перенасыщение'])}
+      ${dualHTML('l_unc','Неопределённость',0,100,40,1,'',['прозрачно','турбулентность'])}
+    </div>
+    <div class="sh int"><span class="dot"></span><span class="sl">Ресурсы инвестора</span><span class="ln"></span></div>
+    <div class="igrid">
+      ${dualHTML('l_exp','Экспертиза',0,100,50,1,'',['новичок','профессионал'])}
+      ${dualHTML('l_soc','Социальный капитал',0,100,50,1,'',['нет связей','широкая сеть'])}
+      ${dualHTML('l_risk','Готовность к риску',0,100,50,1,'',['консервативно','агрессивно'])}
+    </div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════
+// ANALYTICAL ENGINE (shared)
+// ══════════════════════════════════════════
+function calcCore(FP,FS,SC,L,ED,HL,U,costIn,costAct){
+  const k1=.005,k2=.4,k3=.35,k4=.45,k5=.4,k6=.5;
+  const extF=(FP*k1*FS/100)+(SC*k2)-(L*k3);
+  const intF=(ED*k4)+(HL*k5)-(U*k6);
+  const balIdx=intF+extF;
+  const xN=Math.max(-100,Math.min(100,extF));
+  const yN=Math.max(-100,Math.min(100,intF));
+  const rawDLR=costAct>0?costIn/costAct:0;
+  const dlr=rawDLR*(SC/100);
+  const base={x:xN*1.1,y:yN*1.2,dlr:dlr*1.05,p:70};
+  const bull={x:xN*1.5,y:yN*2.0,dlr:dlr*1.6,p:20};
+  const bear={x:xN*0.8,y:yN*0.7,dlr:dlr*0.6,p:10};
+  return {extF,intF,balIdx,xN,yN,dlr,rawDLR,costIn,costAct,SC,base,bull,bear};
+}
+
+// ══════════════════════════════════════════
+// CALC OBJECT (Mode 0)
+// ══════════════════════════════════════════
+function calcObj(){
+  const price=pC('o_price');if(price<=0){toast('Введите стоимость объекта');return;}
+  const area=pC('o_area'),income=pC('o_income'),expenses=pC('o_expenses'),capital=pC('o_capital'),hor=pV('i_o_hor');
+  const dp=pV('i_o_dp'),rate=pV('i_o_rate'),term=pV('i_o_term');
+  const taxR=pV('i_o_tax'),ndfl=pV('i_o_ndfl'),growth=pV('i_o_growth'),vac=pV('i_o_vac');
+  const liq=pV('i_o_liq'),comp=pV('i_o_comp'),unc=pV('i_o_unc');
+  const exp=pV('i_o_exp'),soc=pV('i_o_soc'),risk=pV('i_o_risk');
+  const traf=pV('i_o_traf'),facade=pV('i_o_facade'),park=pV('i_o_park');
+  const ceil=parseFloat($('o_ceil')?.value)||3;
+  const hasEntry=radioVal('o_entry')==='1'?1:0;
+  const hasVent=radioVal('o_vent')==='1'?1:0;
+  const year=pC('o_year'),floor=pC('o_floor');
+
+  const priceM2=area>0?price/area:0;
+  const age=year>0?2026-year:15;const wear=Math.min(age*.8,60);
+  const effInc=income*(1-vac/100);
+  const taxAnn=price*(taxR/100);const ndflM=effInc*(ndfl/100);
+  const net=effInc-expenses-ndflM-taxAnn/12;
+  const yld=price>0?(net*12/price)*100:0;
+  const payback=net>0?price/net:Infinity;
+  const capCov=price>0?Math.min((capital/price)*100,100):0;
+  const levNeed=price>0?Math.max(0,((price-capital)/price)*100):0;
+  const loanAmt=price*(1-dp/100);const mr=rate/100/12;
+  let mortPay=0;if(loanAmt>0&&mr>0&&term>0)mortPay=loanAmt*(mr*Math.pow(1+mr,term))/(Math.pow(1+mr,term)-1);
+  const netMort=net-mortPay;
+
+  const lostInc=net>0?net*hor:0;const oppCost=capital*.08*(hor/12);
+  const costIn=lostInc+oppCost*.3;
+  const riskMult=1+(unc/100)*.5;const costAct=Math.max(price*(levNeed/100)*.15+expenses*hor*riskMult,1);
+
+  const N=calcCore(net,capCov,soc,comp,exp,liq,unc,costIn,costAct);
+
+  // Commercial scoring
+  const floorS=floor<=2?10:floor<=5?6:3;const aS=area||65;
+  const biz=[
+    {n:'Офис',i:'🏢',s:Math.min(100,30+(aS>40?15:5)+(floor>1?10:5)+(park*.15)+(exp*.05)+((100-traf)*.1)),t:''},
+    {n:'Торговля',i:'🛒',s:Math.min(100,(traf*.35)+(facade*.3)+(floorS*2)+(hasEntry*15)+(park*.1)),t:''},
+    {n:'Общепит',i:'🍽',s:Math.min(100,(traf*.25)+(facade*.15)+(hasVent*25)+(hasEntry*10)+(ceil>=3?15:5)+(park*.1)+(aS>=50?10:0)),t:hasVent?'Вентиляция есть':'Без вытяжки невозможен'},
+    {n:'Услуги / салон',i:'💇',s:Math.min(100,25+(traf*.2)+(facade*.15)+(hasEntry*12)+(park*.1)+(aS>=25?10:0)+floorS),t:''},
+    {n:'Склад',i:'📦',s:Math.min(100,20+((100-traf)*.15)+((100-facade)*.1)+(aS>=80?20:aS>=40?10:0)+(ceil>=3.5?15:5)+(floor<=1?20:floor<=2?10:0)),t:''},
+    {n:'Коворкинг',i:'💻',s:Math.min(100,15+(aS>=60?20:aS>=30?10:0)+(park*.15)+(traf*.15)+(facade*.1)+(hasEntry*8)+(liq*.1)),t:''},
+    {n:'Хостел',i:'🏨',s:Math.min(100,10+(aS>=80?25:aS>=50?15:5)+(liq*.2)+(traf*.1)+(floor<=3?10:5)+(hasEntry*5)+((100-comp)*.1)),t:''},
+    {n:'Образование',i:'📚',s:Math.min(100,20+(aS>=40?15:5)+(park*.15)+(traf*.1)+(hasEntry*10)+(ceil>=2.8?10:3)+(floor<=3?8:3)),t:''},
+  ].sort((a,b)=>b.s-a.s);
+
+  const R={...N,price,area,priceM2,age,wear,income:effInc,expenses,capital,hor,net,yld,payback,capCov,levNeed,mortPay,netMort,growth,vac,biz,
+    planRows:buildPlan(hor,effInc,expenses+ndflM+taxAnn/12,mortPay,price,growth)};
+  LR_obj=R;
+  renderResults('resObj',R,'obj');
+}
+
+// ══════════════════════════════════════════
+// CALC LAND (Mode 1)
+// ══════════════════════════════════════════
+function calcLand(){
+  const landPrice=pC('l_price');if(landPrice<=0){toast('Введите стоимость участка');return;}
+  const landArea=pC('l_area'); // sotki
+  const capital=pC('l_capital');
+  const commCost=pC('l_comm_cost');
+  const bldPct=pV('i_l_bld_pct');const floors=pV('i_l_floors');
+  const bldCostM2=pV('i_l_bld_cost');const bldMonths=pV('i_l_bld_months');
+  const rentM2=pV('i_l_rent');const sellM2=pV('i_l_sell_m2');
+  const vac=pV('i_l_vac');const opex=pV('i_l_opex');
+  const hor=pV('i_l_hor');const growth=pV('i_l_growth');
+  const liq=pV('i_l_liq');const comp=pV('i_l_comp');const unc=pV('i_l_unc');
+  const exp=pV('i_l_exp');const soc=pV('i_l_soc');const risk=pV('i_l_risk');
+  const dist=pV('i_l_dist');const road=pV('i_l_road');const traf=pV('i_l_traf');
+
+  // Get comm status
+  function commStatus(name){
+    const wrap=$('l_'+name+'_wrap');
+    if(!wrap)return 'on';
+    const act=wrap.querySelector('.ob.act');
+    return act?act.dataset.val:'on';
+  }
+  const elec=commStatus('elec'),gas=commStatus('gas'),water=commStatus('water'),sewer=commStatus('sewer');
+  const relief=($('l_relief_wrap')?.querySelector('.ob.act')?.dataset.val)||'flat';
+
+  // ─── Derived ───
+  const landM2=landArea*100; // sotki to m2
+  const buildableM2=landM2*(bldPct/100);
+  const totalBldM2=buildableM2*floors;
+  const bldCostTotal=totalBldM2*bldCostM2;
+  const totalInvest=landPrice+commCost+bldCostTotal;
+  const priceM2land=landM2>0?landPrice/landM2:0;
+
+  // Comm readiness score
+  const commScore=[elec,gas,water,sewer].reduce((s,v)=>s+(v==='on'?25:v==='near'?15:0),0);
+
+  // Monthly rental income after build
+  const monthlyRent=totalBldM2*rentM2*(1-vac/100);
+  const netMonthly=monthlyRent-opex;
+  const annualNet=netMonthly*12;
+  const yld=totalInvest>0?(annualNet/totalInvest)*100:0;
+  const payback=netMonthly>0?totalInvest/netMonthly:Infinity;
+
+  // Sale scenario
+  const saleRevenue=totalBldM2*sellM2;
+  const saleProfit=saleRevenue-totalInvest;
+  const saleROI=totalInvest>0?(saleProfit/totalInvest)*100:0;
+
+  const capCov=totalInvest>0?Math.min((capital/totalInvest)*100,100):0;
+  const levNeed=totalInvest>0?Math.max(0,((totalInvest-capital)/totalInvest)*100):0;
+
+  // Cost of inaction vs action (adapted for dev cycle)
+  const lostInc=netMonthly>0?netMonthly*Math.max(0,hor-bldMonths):0;
+  const oppCost=capital*.08*(hor/12);
+  const costIn=lostInc+oppCost*.3;
+  const riskMult=1+(unc/100)*.5;
+  const costAct=Math.max(totalInvest*.1+opex*hor*riskMult,1);
+
+  const N=calcCore(netMonthly,capCov,soc,comp,exp,liq,unc,costIn,costAct);
+
+  // ─── BEST USE COMPARISON ───
+  const types=[
+    {n:'Торговый центр',i:'🛒',rentK:1.3,bldK:1.1,flK:2,vacK:.85},
+    {n:'Офисный центр',i:'🏢',rentK:1.0,bldK:1.0,flK:3,vacK:.8},
+    {n:'Жилой дом (МКД)',i:'🏠',rentK:.7,bldK:.95,flK:5,vacK:.92},
+    {n:'Таунхаусы',i:'🏘',rentK:.6,bldK:.85,flK:2,vacK:.95},
+    {n:'Склад / логистика',i:'📦',rentK:.4,bldK:.6,flK:1,vacK:.88},
+    {n:'Общепит / сервис',i:'🍽',rentK:1.5,bldK:1.2,flK:1,vacK:.75},
+    {n:'Придорожный сервис',i:'⛽',rentK:1.2,bldK:.8,flK:1,vacK:.7},
+  ];
+
+  const useComps=types.map(t=>{
+    const tBldM2=buildableM2*t.flK;
+    const tBldCost=tBldM2*bldCostM2*t.bldK;
+    const tTotal=landPrice+commCost+tBldCost;
+    const tRent=tBldM2*rentM2*t.rentK*(1-vac/100)*t.vacK;
+    const tNet=tRent-opex*(t.bldK);
+    const tYld=tTotal>0?(tNet*12/tTotal)*100:0;
+    const tPayback=tNet>0?tTotal/tNet:Infinity;
+    const tSale=tBldM2*sellM2*t.rentK;
+    const tROI=tTotal>0?((tSale-tTotal)/tTotal)*100:0;
+    // Location suitability bonus
+    let locBonus=0;
+    if(t.n.includes('Торговый')||t.n.includes('Общепит'))locBonus=traf*.3+road*.1;
+    if(t.n.includes('Склад')||t.n.includes('Придорож'))locBonus=(100-dist*2)*.2+road*.2;
+    if(t.n.includes('Жилой')||t.n.includes('Таун'))locBonus=liq*.2+(100-dist)*.1;
+    if(t.n.includes('Офис'))locBonus=road*.15+traf*.15;
+    const score=Math.min(100,Math.max(0,tYld*3+tROI*.1+locBonus+commScore*.1));
+    return {...t,tBldM2:Math.round(tBldM2),tTotal:Math.round(tTotal),tNet:Math.round(tNet),tYld,tPayback,tROI,score:Math.round(score)};
+  }).sort((a,b)=>b.score-a.score);
+
+  // Financial plan with construction phase
+  const planRows=[];
+  let cumCash=-landPrice-commCost;
+  for(let m=1;m<=Math.min(hor,60);m++){
+    const isBuilding=m<=bldMonths;
+    const mBldCost=isBuilding?bldCostTotal/bldMonths:0;
+    const mIncome=isBuilding?0:monthlyRent;
+    const mExp=isBuilding?0:opex;
+    const mNet=mIncome-mExp-mBldCost;
+    cumCash+=mNet;
+    const estValue=(landPrice+commCost+Math.min(m/bldMonths,1)*bldCostTotal)*Math.pow(1+growth/100/12,m);
+    planRows.push({m,phase:isBuilding?'🔨 Стройка':'💰 Эксплуатация',income:Math.round(mIncome),exp:Math.round(mExp+mBldCost),mNet:Math.round(mNet),cumCash:Math.round(cumCash),estValue:Math.round(estValue)});
+  }
+
+  const R={...N,landPrice,landArea,landM2,buildableM2,totalBldM2:Math.round(totalBldM2),bldCostTotal:Math.round(bldCostTotal),totalInvest:Math.round(totalInvest),priceM2land:Math.round(priceM2land),commCost,commScore,
+    monthlyRent:Math.round(monthlyRent),netMonthly:Math.round(netMonthly),yld,payback,capCov,levNeed,
+    saleRevenue:Math.round(saleRevenue),saleProfit:Math.round(saleProfit),saleROI,
+    bldMonths,hor,growth,vac,useComps,planRows};
+  LR_land=R;
+  renderResults('resLand',R,'land');
+}
+
+// ══════════════════════════════════════════
+// SHARED RENDERERS
+// ══════════════════════════════════════════
+function buildPlan(hor,inc,exp,mort,price,growth){
+  const rows=[];let cum=0;
+  for(let m=1;m<=Math.min(hor,60);m++){
+    const mn=inc-exp-mort;cum+=mn;
+    const val=price*Math.pow(1+growth/100/12,m);
+    rows.push({m,income:Math.round(inc),exp:Math.round(exp),mort:Math.round(mort),mNet:Math.round(mn),cumCash:Math.round(cum),estValue:Math.round(val)});
+  }
+  return rows;
+}
+
+function renderResults(containerId,R,type){
+  const c=$(containerId);
+  const isLand=type==='land';
+
+  let html=`
+  <div class="rc" id="${type}_c1"><div class="ct">Decision Leverage Ratio — Рычаг решения</div>
+    <div class="dlr-d"><div class="dlr-n ${R.dlr>1.5?'g':R.dlr>=.8?'y':'r'}" id="${type}_dn">${R.dlr.toFixed(2)}</div>
+    <div class="dlr-z">${R.dlr>1.5?'<span style="color:var(--grn)">🟢 Действие выгодно</span>':R.dlr>=.8?'<span style="color:var(--ylw)">🟡 Режим наблюдения</span>':'<span style="color:var(--red)">🔴 Критическая зона</span>'}</div>
+    <div class="dlr-e">${R.dlr>1.5?`Рычаг высок: цена бездействия (${fM(R.costIn)}₽) значительно превышает цену действия (${fM(R.costAct)}₽).`:R.dlr>=.8?`Цена бездействия (${fM(R.costIn)}₽) и цена действия (${fM(R.costAct)}₽) сопоставимы.`:`Цена действия (${fM(R.costAct)}₽) превышает цену бездействия (${fM(R.costIn)}₽).`}</div>
+    <div class="dlr-f"><span style="color:var(--ext)">Цена бездействия = ${fM(R.costIn)}₽</span><br><span style="color:var(--int)">Цена действия = ${fM(R.costAct)}₽</span><br>DLR = (${fM(R.costIn)} ÷ ${fM(R.costAct)}) × (SC ${R.SC} ÷ 100) = <b style="color:var(--gold)">${R.dlr.toFixed(2)}</b></div>
+    </div></div>`;
+
+  // Metrics
+  let mets;
+  if(isLand){
+    mets=[
+      {v:fR(R.priceM2land)+'₽',n:'Цена за м² земли'},
+      {v:fR(R.totalBldM2)+' м²',n:'Площадь застройки'},
+      {v:fM(R.totalInvest)+'₽',n:'Общий объём инвестиций'},
+      {v:fM(R.bldCostTotal)+'₽',n:'Стоимость строительства'},
+      {v:R.commScore+'/100',n:'Готовность коммуникаций'},
+      {v:R.yld.toFixed(1)+'%',n:'Доходность (аренда) / год'},
+      {v:R.payback===Infinity?'∞':Math.round(R.payback)+' мес',n:'Окупаемость (аренда)'},
+      {v:fM(R.netMonthly)+'₽',n:'Чистый поток / мес'},
+      {v:fM(R.saleRevenue)+'₽',n:'Выручка при продаже'},
+      {v:R.saleROI.toFixed(0)+'%',n:'ROI при продаже'},
+      {v:R.capCov.toFixed(0)+'%',n:'Покрытие капиталом'},
+      {v:(R.balIdx>0?'+':'')+R.balIdx.toFixed(1),n:'Индекс баланса'},
+    ];
+  }else{
+    mets=[
+      {v:R.yld.toFixed(1)+'%',n:'Чистая доходность / год'},
+      {v:R.payback===Infinity?'∞':Math.round(R.payback)+' мес',n:'Окупаемость'},
+      {v:fM(R.net)+'₽',n:'Чистый поток / мес'},
+      {v:R.priceM2>0?fR(Math.round(R.priceM2))+'₽':'—',n:'Цена за м²'},
+      {v:R.capCov.toFixed(0)+'%',n:'Покрытие капиталом'},
+      {v:R.mortPay>0?fR(Math.round(R.mortPay))+'₽':'—',n:'Ипотека / мес'},
+      {v:R.netMort!==undefined?fM(R.netMort)+'₽':'—',n:'Поток после ипотеки'},
+      {v:R.wear!==undefined?R.wear.toFixed(0)+'%':'—',n:'Износ здания'},
+      {v:R.xN.toFixed(1),n:'Рыночные факторы (X)'},
+      {v:R.yN.toFixed(1),n:'Ресурсы инвестора (Y)'},
+      {v:(R.balIdx>0?'+':'')+R.balIdx.toFixed(1),n:'Индекс баланса'},
+    ];
+  }
+  html+=`<div class="rc" id="${type}_c2"><div class="ct">Ключевые метрики</div><div class="mg">${mets.map(m=>`<div class="mb"><div class="mv">${m.v}</div><div class="mn">${m.n}</div></div>`).join('')}</div></div>`;
+
+  // Plane
+  html+=`<div class="rc" id="${type}_c3"><div class="ct">Координатная плоскость</div><div class="plane-c"><canvas id="${type}_cvs"></canvas></div></div>`;
+
+  // Best use comparison (land only)
+  if(isLand&&R.useComps){
+    html+=`<div class="rc" id="${type}_c4"><div class="ct">Что выгоднее построить — сравнение вариантов</div><div class="cmp-grid">${R.useComps.map((u,i)=>{
+      const col=u.score>=65?'var(--grn)':u.score>=40?'var(--ylw)':'var(--red)';
+      return `<div class="cmp-card${i<2?' best':''}">
+        <div class="cc-name">${u.i} ${u.n}</div>
+        <div class="cc-score">Рейтинг: ${u.score}/100</div>
+        <div class="cc-bar"><div class="cc-fill" style="width:${u.score}%;background:${col}"></div></div>
+        <div class="cc-row">Площадь: <b>${fR(u.tBldM2)} м²</b></div>
+        <div class="cc-row">Инвестиции: <b>${fM(u.tTotal)}₽</b></div>
+        <div class="cc-row">Чистый поток: <b>${fM(u.tNet)}₽/мес</b></div>
+        <div class="cc-row">Доходность: <b>${u.tYld.toFixed(1)}%</b></div>
+        <div class="cc-row">Окупаемость: <b>${u.tPayback===Infinity?'∞':Math.round(u.tPayback)+' мес'}</b></div>
+        <div class="cc-row">ROI продажа: <b>${u.tROI.toFixed(0)}%</b></div>
+      </div>`;}).join('')}</div></div>`;
+  }
+
+  // Financial plan
+  const pr=R.planRows;
+  if(pr&&pr.length){
+    const step=pr.length>24?3:pr.length>12?2:1;
+    let tbl=`<thead><tr><th>Мес</th>${isLand?'<th>Фаза</th>':''}<th>Доход</th><th>Расходы</th><th>Чистый</th><th>Накоплено</th><th>Стоимость</th></tr></thead><tbody>`;
+    pr.forEach((r,i)=>{
+      if(i%step!==0&&i!==0&&i!==pr.length-1)return;
+      const cls=r.mNet>=0?'pos':'neg';
+      tbl+=`<tr><td class="num">${r.m}</td>${isLand?`<td style="font-size:9px">${r.phase||''}</td>`:''}<td class="num">${fR(r.income||0)}</td><td class="num">${fR(r.exp||0)}</td><td class="num ${cls}">${fR(r.mNet)}</td><td class="num ${r.cumCash>=0?'pos':'neg'}">${fR(r.cumCash)}</td><td class="num">${fR(r.estValue||0)}</td></tr>`;
+    });
+    tbl+=`</tbody>`;
+    html+=`<div class="rc" id="${type}_c5"><div class="ct">Финансовый план${isLand?' (стройка → эксплуатация)':''}</div><div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table class="ptable">${tbl}</table></div></div>`;
+  }
+
+  // Scenarios
+  html+=`<div class="rc" id="${type}_c6"><div class="ct">Сценарии</div><div class="scg">
+    <div class="scc base"><div class="sl">BASE (${R.base.p}%)</div><div class="sv">${R.base.dlr.toFixed(2)}</div><div class="sd">(${R.base.x.toFixed(0)}, ${R.base.y.toFixed(0)})</div></div>
+    <div class="scc bull"><div class="sl">BULL (${R.bull.p}%)</div><div class="sv">${R.bull.dlr.toFixed(2)}</div><div class="sd">(${R.bull.x.toFixed(0)}, ${R.bull.y.toFixed(0)})</div></div>
+    <div class="scc bear"><div class="sl">BEAR (${R.bear.p}%)</div><div class="sv">${R.bear.dlr.toFixed(2)}</div><div class="sd">(${R.bear.x.toFixed(0)}, ${R.bear.y.toFixed(0)})</div></div>
+  </div></div>`;
+
+  // Balance index
+  const tilt=Math.max(-30,Math.min(30,R.balIdx*.5));
+  const aE=Math.abs(R.extF),aI=Math.abs(R.intF),tot=aE+aI||1;
+  html+=`<div class="rc" id="${type}_c7"><div class="ct">Индекс баланса</div><div class="bi-wrap">
+    <div class="bi-disc" style="transform:perspective(300px) rotateY(${tilt}deg)"><div class="inner"><div class="bv">${(R.balIdx>0?'+':'')}${R.balIdx.toFixed(1)}</div><div class="bl">Индекс</div></div></div>
+    <div class="bi-bar"><div style="font-family:var(--fm);font-size:9px;color:var(--dim);margin-bottom:8px;letter-spacing:1px">БАЛАНС СИЛ</div>
+    <div class="bi-track"><div class="bi-fext" style="width:${(aE/tot)*100}%"></div><div class="bi-fint" style="width:${(aI/tot)*100}%"></div></div>
+    <div class="bi-labels"><span class="el">Рынок ${R.extF.toFixed(1)}</span><span class="il2">Ресурсы ${R.intF.toFixed(1)}</span></div>
+    <div style="margin-top:12px;font-size:9px;color:var(--dim);line-height:1.8;font-family:var(--fm)">
+      <div style="color:var(--ext)">Рыночные (X) = (FP×k₁×FS/100) + (SC×k₂) − (L×k₃)</div>
+      <div style="color:var(--int);margin-top:2px">Ресурсы (Y) = (ED×k₄) + (HL×k₅) − (U×k₆)</div>
+      <div style="color:var(--gold);margin-top:4px;padding-top:4px;border-top:1px solid var(--brd)">Индекс = Y + X = ${R.intF.toFixed(1)} + ${R.extF.toFixed(1)} = ${R.balIdx.toFixed(1)}</div>
+    </div></div></div></div>`;
+
+  // Commercial (object only)
+  if(!isLand&&R.biz){
+    html+=`<div class="rc" id="${type}_c8"><div class="ct">Коммерческая привлекательность</div><div class="cmp-grid">${R.biz.map((b,i)=>{
+      const col=b.s>=70?'var(--grn)':b.s>=45?'var(--ylw)':'var(--red)';
+      return `<div class="cmp-card${i<2?' best':''}"><div class="cc-name">${b.i} ${b.n}</div><div class="cc-score">${Math.round(b.s)}/100</div><div class="cc-bar"><div class="cc-fill" style="width:${b.s}%;background:${col}"></div></div>${b.t?`<div class="cc-row">${b.t}</div>`:''}</div>`;
+    }).join('')}</div></div>`;
+  }
+
+  c.innerHTML=html+`<div style="text-align:center;margin-top:8px"><button class="pdf-btn" onclick="exportPDF()">📄 Экспорт PDF</button></div>`;
+
+  // Animate cards
+  setTimeout(()=>{
+    c.querySelectorAll('.rc').forEach((card,i)=>setTimeout(()=>card.classList.add('vis'),80+i*90));
+  },50);
+
+  // Draw plane
+  setTimeout(()=>drawPlane(`${type}_cvs`,R),200);
+  setTimeout(()=>c.querySelector('.rc')?.scrollIntoView({behavior:'smooth',block:'start'}),150);
+}
+
+function drawPlane(canvasId,R){
+  const canvas=$(canvasId);if(!canvas)return;
+  const rect=canvas.parentElement.getBoundingClientRect();
+  const dpr=window.devicePixelRatio||1;
+  canvas.width=rect.width*dpr;canvas.height=rect.height*dpr;
+  canvas.style.width=rect.width+'px';canvas.style.height=rect.height+'px';
+  const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);
+  const W=rect.width,H=rect.height,cx=W/2,cy=H/2,s=Math.min(W,H)*.38;
+
+  ctx.fillStyle='rgba(3,12,26,.95)';ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle='rgba(70,100,180,.08)';ctx.lineWidth=1;
+  for(let i=-4;i<=4;i++){const gx=cx+(i/4)*s,gy=cy-(i/4)*s;ctx.beginPath();ctx.moveTo(gx,cy-s);ctx.lineTo(gx,cy+s);ctx.stroke();ctx.beginPath();ctx.moveTo(cx-s,gy);ctx.lineTo(cx+s,gy);ctx.stroke();}
+  ctx.strokeStyle='rgba(100,130,200,.2)';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(cx-s-20,cy);ctx.lineTo(cx+s+20,cy);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(cx,cy-s-20);ctx.lineTo(cx,cy+s+20);ctx.stroke();
+  const ns=s*.25;ctx.fillStyle='rgba(201,168,76,.04)';ctx.strokeStyle='rgba(201,168,76,.15)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.rect(cx-ns,cy-ns,ns*2,ns*2);ctx.fill();ctx.stroke();
+  ctx.font='10px "JetBrains Mono"';ctx.textAlign='center';
+  ctx.fillStyle='rgba(126,143,200,.6)';ctx.fillText('РЫНОЧНЫЕ ФАКТОРЫ →',cx+s,cy+18);
+  ctx.fillStyle='rgba(142,174,216,.6)';ctx.fillText('↑ РЕСУРСЫ ИНВЕСТОРА',cx,cy-s-8);
+  ctx.font='9px "JetBrains Mono"';ctx.fillStyle='rgba(201,168,76,.3)';ctx.fillText('ЗОНА НОРМЫ',cx,cy-ns-5);
+
+  function dot(x,y,col,lbl,r){const px=cx+(x/100)*s,py=cy-(y/100)*s;const g=ctx.createRadialGradient(px,py,0,px,py,r*3);g.addColorStop(0,col.replace(')',',0.3)').replace('rgb','rgba'));g.addColorStop(1,'transparent');ctx.fillStyle=g;ctx.fillRect(px-r*3,py-r*3,r*6,r*6);ctx.beginPath();ctx.arc(px,py,r,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();if(lbl){ctx.font='9px "JetBrains Mono"';ctx.fillStyle=col;ctx.textAlign='left';ctx.fillText(lbl,px+r+5,py+3);}}
+  const cl=v=>Math.max(-100,Math.min(100,v));
+  dot(cl(R.bear.x),cl(R.bear.y),'rgb(199,80,80)','BEAR',5);
+  dot(cl(R.bull.x),cl(R.bull.y),'rgb(76,175,124)','BULL',5);
+  dot(cl(R.base.x),cl(R.base.y),'rgb(232,184,76)','BASE',6);
+  const mx=cx+(R.xN/100)*s,my=cy-(R.yN/100)*s;
+  ctx.beginPath();ctx.arc(mx,my,10,0,Math.PI*2);ctx.strokeStyle='rgba(201,168,76,.8)';ctx.lineWidth=2;ctx.stroke();
+  ctx.beginPath();ctx.arc(mx,my,4,0,Math.PI*2);ctx.fillStyle='#FFD700';ctx.fill();
+  ctx.font='11px "JetBrains Mono"';ctx.fillStyle='#FFD700';ctx.textAlign='left';
+  ctx.fillText(`(${R.xN.toFixed(1)}, ${R.yN.toFixed(1)})`,mx+16,my-8);
+  ctx.font='9px "JetBrains Mono"';ctx.fillStyle='rgba(200,208,232,.5)';ctx.fillText('ТЕКУЩАЯ',mx+16,my+6);
+  ctx.font='9px "JetBrains Mono"';ctx.fillStyle='rgba(201,168,76,.12)';ctx.textAlign='right';ctx.fillText('Аналитическая платформа © Греков',W-12,H-8);
+}
+
+window.addEventListener('resize',()=>{
+  if(LR_obj)drawPlane('obj_cvs',LR_obj);
+  if(LR_land)drawPlane('land_cvs',LR_land);
+});
+
+// ══════════════════════════════════════════
+// MODE 2: COMPARISON ENGINE
+// ══════════════════════════════════════════
+let cmpCount=0;
+const cmpMax=4;
+
+function addCmpObj(){
+  if(cmpCount>=cmpMax){toast('Максимум '+cmpMax+' объектов');return;}
+  cmpCount++;
+  const n=cmpCount;
+  const lbl=['А','Б','В','Г'][n-1]||n;
+  const wrap=$('cmpObjects');
+  const div=document.createElement('div');
+  div.className='obj-row';
+  div.id='cobj_'+n;
+  div.innerHTML=`
+    <div class="obj-num"><span>Объект ${lbl}</span>${n>1?`<button class="obj-del" onclick="delCmpObj(${n})">✕</button>`:''}</div>
+    <div class="igrid">
+      <div class="ig"><div class="il"><span class="nm">Название / адрес</span></div><div class="cr"><input type="text" class="ni" id="c${n}_name" placeholder="Объект ${lbl}"></div></div>
+      <div class="ig"><div class="il"><span class="nm">Стоимость</span></div><div class="cr"><input type="text" class="ni" id="c${n}_price" placeholder="12 500 000" oninput="fmtC(this)"><span class="cl">₽</span></div></div>
+      <div class="ig"><div class="il"><span class="nm">Площадь</span></div><div class="cr"><input type="text" class="ni" id="c${n}_area" placeholder="65"><span class="cl">м²</span></div></div>
+      <div class="ig"><div class="il"><span class="nm">Доход / мес</span></div><div class="cr"><input type="text" class="ni" id="c${n}_income" placeholder="85 000" oninput="fmtC(this)"><span class="cl">₽</span></div></div>
+      <div class="ig"><div class="il"><span class="nm">Расходы / мес</span></div><div class="cr"><input type="text" class="ni" id="c${n}_expenses" placeholder="15 000" oninput="fmtC(this)"><span class="cl">₽</span></div></div>
+      <div class="ig"><div class="il"><span class="nm">Год постройки</span></div><div class="cr"><input type="number" class="ni" id="c${n}_year" placeholder="2005"></div></div>
+      <div class="ig"><div class="il"><span class="nm">Этаж</span></div><div class="cr"><input type="number" class="ni" id="c${n}_floor" placeholder="3" style="width:60px"></div></div>
+      <div class="ig"><div class="il"><span class="nm">Состояние (0-100)</span></div><div class="cr"><input type="number" class="ni" id="c${n}_cond" placeholder="70" min="0" max="100"></div></div>
+      <div class="ig"><div class="il"><span class="nm">Ликвидность (0-100)</span></div><div class="cr"><input type="number" class="ni" id="c${n}_liq" placeholder="50" min="0" max="100"></div></div>
+      <div class="ig"><div class="il"><span class="nm">Юр. чистота (0-100)</span></div><div class="cr"><input type="number" class="ni" id="c${n}_legal" placeholder="80" min="0" max="100"></div></div>
+    </div>`;
+  wrap.appendChild(div);
+}
+
+function delCmpObj(n){
+  const el=$('cobj_'+n);
+  if(el)el.remove();
+}
+
+function calcCompare(){
+  const rows=document.querySelectorAll('#cmpObjects .obj-row');
+  if(rows.length<2){toast('Добавьте минимум 2 объекта');return;}
+
+  const capital=5000000; // default
+  const soc=50,comp=50,exp=50,liq_def=50,unc=40,hor=36;
+
+  const objects=[];
+  rows.forEach(row=>{
+    const id=row.id.replace('cobj_','');
+    const name=$('c'+id+'_name')?.value||'Объект '+id;
+    const price=pC('c'+id+'_price');
+    const area=pC('c'+id+'_area');
+    const income=pC('c'+id+'_income');
+    const expenses=pC('c'+id+'_expenses');
+    const year=pC('c'+id+'_year');
+    const floor=pC('c'+id+'_floor');
+    const cond=pC('c'+id+'_cond')||70;
+    const liq=pC('c'+id+'_liq')||liq_def;
+    const legal=pC('c'+id+'_legal')||80;
+
+    if(price<=0)return;
+
+    const net=income-expenses;
+    const yld=price>0?(net*12/price)*100:0;
+    const payback=net>0?price/net:Infinity;
+    const priceM2=area>0?price/area:0;
+    const age=year>0?2026-year:15;
+    const wear=Math.min(age*.8,60);
+    const capCov=price>0?Math.min((capital/price)*100,100):0;
+
+    const lostInc=net>0?net*hor:0;
+    const oppCost=capital*.08*(hor/12);
+    const costIn=lostInc+oppCost*.3;
+    const riskMult=1+(unc/100)*.5;
+    const levNeed=price>0?Math.max(0,((price-capital)/price)*100):0;
+    const costAct=Math.max(price*(levNeed/100)*.15+expenses*hor*riskMult,1);
+
+    const N=calcCore(net,capCov,soc,comp,exp,liq,unc,costIn,costAct);
+
+    // Composite score: DLR*30 + yield*15 + condition*10 + legal*10 + liquidity*10 + (100-wear)*5
+    const composite=Math.min(100,Math.max(0,
+      N.dlr*20 + yld*2 + cond*.1 + legal*.1 + liq*.1 + (100-wear)*.05
+    ));
+
+    objects.push({id,name,price,area,priceM2,income,expenses,net,yld,payback,age,wear,cond,liq,legal,floor,
+      dlr:N.dlr,xN:N.xN,yN:N.yN,balIdx:N.balIdx,composite});
+  });
+
+  if(objects.length<2){toast('Введите данные минимум для 2 объектов');return;}
+
+  // Find best for each metric
+  const bestDLR=Math.max(...objects.map(o=>o.dlr));
+  const bestYld=Math.max(...objects.map(o=>o.yld));
+  const bestPayback=Math.min(...objects.filter(o=>o.payback<Infinity).map(o=>o.payback));
+  const bestPrice=Math.min(...objects.map(o=>o.priceM2).filter(v=>v>0));
+  const bestComp=Math.max(...objects.map(o=>o.composite));
+
+  const labels=['А','Б','В','Г'];
+
+  // Build comparison table
+  const metrics=[
+    {n:'Стоимость',f:o=>fR(o.price)+'₽',best:(a,b)=>a.price<b.price},
+    {n:'Площадь',f:o=>o.area?o.area+' м²':'—',best:(a,b)=>a.area>b.area},
+    {n:'Цена за м²',f:o=>o.priceM2?fR(Math.round(o.priceM2))+'₽':'—',best:(a,b)=>a.priceM2<b.priceM2&&a.priceM2>0},
+    {n:'Доход / мес',f:o=>fR(o.income)+'₽',best:(a,b)=>a.income>b.income},
+    {n:'Чистый поток',f:o=>fR(o.net)+'₽',best:(a,b)=>a.net>b.net},
+    {n:'Доходность / год',f:o=>o.yld.toFixed(1)+'%',best:(a,b)=>a.yld>b.yld},
+    {n:'Окупаемость',f:o=>o.payback===Infinity?'∞':Math.round(o.payback)+' мес',best:(a,b)=>a.payback<b.payback},
+    {n:'Возраст / износ',f:o=>o.age+'л / '+o.wear.toFixed(0)+'%',best:(a,b)=>a.wear<b.wear},
+    {n:'Состояние',f:o=>o.cond+'/100',best:(a,b)=>a.cond>b.cond},
+    {n:'Юр. чистота',f:o=>o.legal+'/100',best:(a,b)=>a.legal>b.legal},
+    {n:'Ликвидность',f:o=>o.liq+'/100',best:(a,b)=>a.liq>b.liq},
+    {n:'DLR',f:o=>o.dlr.toFixed(2),best:(a,b)=>a.dlr>b.dlr},
+    {n:'Индекс баланса',f:o=>(o.balIdx>0?'+':'')+o.balIdx.toFixed(1),best:(a,b)=>a.balIdx>b.balIdx},
+    {n:'Итоговый рейтинг',f:o=>o.composite.toFixed(0)+'/100',best:(a,b)=>a.composite>b.composite},
+  ];
+
+  let thtml=`<table class="cmp-table"><thead><tr><th>Параметр</th>${objects.map((o,i)=>`<th>Объект ${labels[i]}<br><span style="font-size:7px;opacity:.6">${o.name}</span></th>`).join('')}</tr></thead><tbody>`;
+
+  metrics.forEach(m=>{
+    // Find winner for this metric
+    let winIdx=-1,winObj=null;
+    objects.forEach((o,i)=>{
+      if(winObj===null||m.best(o,winObj)){winObj=o;winIdx=i;}
+    });
+    thtml+=`<tr><td>${m.n}</td>`;
+    objects.forEach((o,i)=>{
+      const isWin=i===winIdx&&objects.length>1;
+      thtml+=`<td class="${isWin?'winner':''}">${m.f(o)}</td>`;
+    });
+    thtml+=`</tr>`;
+  });
+  thtml+=`</tbody></table>`;
+
+  // Winner verdict
+  const winner=objects.reduce((a,b)=>a.composite>b.composite?a:b);
+  const winLabel=labels[objects.indexOf(winner)];
+
+  let html=`<div class="rc vis"><div class="ct">Таблица сравнения</div><div style="overflow-x:auto;-webkit-overflow-scrolling:touch">${thtml}</div>
+    <div class="cmp-verdict"><div class="cv-title">🏆 Рекомендация аналитической платформы</div>
+    <div class="cv-text"><b>Объект ${winLabel} — «${winner.name}»</b> набрал наивысший итоговый рейтинг <b>${winner.composite.toFixed(0)}/100</b> с DLR = <b>${winner.dlr.toFixed(2)}</b>. ${winner.dlr>1.5?'Рычаг решения указывает на выгодность действия.':winner.dlr>=.8?'Рекомендуется дополнительный анализ.':'Требуется осторожность при входе.'}</div>
+    </div>
+    <div style="text-align:center;margin-top:16px"><button class="pdf-btn" onclick="exportPDF()">📄 Экспорт PDF</button></div>
+  </div>`;
+
+  $('resCmp').innerHTML=html;
+}
+
+// ══════════════════════════════════════════
+// PDF EXPORT
+// ══════════════════════════════════════════
+function exportPDF(){
+  // Collect visible results from any active mode
+  const target=curMode===0?$('resObj'):curMode===1?$('resLand'):$('resCmp');
+  if(!target||!target.innerHTML){toast('Сначала выполните расчёт');return;}
+
+  const printWin=window.open('','','width=900,height=700');
+  printWin.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>Аналитический отчёт — Греков В.К.</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:Arial,sans-serif;color:#1a1a2e;padding:32px;font-size:12px;line-height:1.6}
+    h1{font-size:22px;color:#030C1A;margin-bottom:4px;font-weight:300}
+    .logo{font-size:10px;letter-spacing:4px;color:#C9A84C;text-transform:uppercase;margin-bottom:16px}
+    .quote{font-style:italic;color:#666;border-left:2px solid #C9A84C;padding:8px 16px;margin:12px 0 20px;font-size:11px}
+    .section{margin:20px 0;page-break-inside:avoid}
+    .section h2{font-size:13px;letter-spacing:2px;text-transform:uppercase;color:#C9A84C;margin-bottom:10px;border-bottom:1px solid #eee;padding-bottom:4px}
+    table{width:100%;border-collapse:collapse;margin:8px 0}
+    th{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#888;padding:6px 8px;text-align:left;border-bottom:1px solid #ddd}
+    td{padding:6px 8px;border-bottom:1px solid #f0f0f0;font-size:11px}
+    .winner{color:#2e7d32;font-weight:700}
+    .footer{margin-top:30px;padding-top:12px;border-top:1px solid #ddd;font-size:9px;color:#999;text-align:center}
+    .dlr-big{font-size:48px;font-weight:700;text-align:center;margin:16px 0 8px}
+    .dlr-big.g{color:#2e7d32}.dlr-big.y{color:#e6a800}.dlr-big.r{color:#c62828}
+    .verdict{background:#f0f8f0;border:1px solid #c8e6c9;border-radius:8px;padding:14px;text-align:center;margin:16px 0}
+    @media print{body{padding:20px}}
+  </style></head><body>
+  <div class="logo">АНАЛИТИЧЕСКАЯ ПЛАТФОРМА</div>
+  <h1>Аналитика инвестиционной привлекательности</h1>
+  <div class="quote">Цифры честнее букв. — В. Греков</div>
+  <div class="section"><p>Дата: ${new Date().toLocaleDateString('ru-RU')} · Авторская методология</p></div>
+  `);
+
+  // Extract text content from results
+  const cards=target.querySelectorAll('.rc');
+  cards.forEach(card=>{
+    const title=card.querySelector('.ct')?.textContent||'';
+    const tables=card.querySelectorAll('table');
+    const verdicts=card.querySelectorAll('.cmp-verdict');
+
+    printWin.document.write(`<div class="section"><h2>${title}</h2>`);
+
+    // DLR number
+    const dlrEl=card.querySelector('.dlr-n');
+    if(dlrEl){
+      const cls=dlrEl.classList.contains('g')?'g':dlrEl.classList.contains('y')?'y':'r';
+      printWin.document.write(`<div class="dlr-big ${cls}">${dlrEl.textContent}</div>`);
+      const zone=card.querySelector('.dlr-z');
+      const explain=card.querySelector('.dlr-e');
+      if(zone)printWin.document.write(`<p style="text-align:center;font-weight:600">${zone.textContent}</p>`);
+      if(explain)printWin.document.write(`<p style="text-align:center;color:#555">${explain.textContent}</p>`);
+    }
+
+    // Tables
+    tables.forEach(t=>printWin.document.write(t.outerHTML));
+
+    // Metric boxes
+    const mboxes=card.querySelectorAll('.mb');
+    if(mboxes.length){
+      printWin.document.write('<table><tr>');
+      mboxes.forEach(mb=>{
+        const val=mb.querySelector('.mv')?.textContent||'';
+        const nm=mb.querySelector('.mn')?.textContent||'';
+        printWin.document.write(`<td style="text-align:center"><b>${val}</b><br><span style="font-size:8px;color:#999">${nm}</span></td>`);
+      });
+      printWin.document.write('</tr></table>');
+    }
+
+    // Scenarios
+    const scenCards=card.querySelectorAll('.scc');
+    if(scenCards.length){
+      printWin.document.write('<table><tr>');
+      scenCards.forEach(sc=>{
+        const lbl=sc.querySelector('.sl')?.textContent||'';
+        const val=sc.querySelector('.sv')?.textContent||'';
+        const desc=sc.querySelector('.sd')?.textContent||'';
+        printWin.document.write(`<td style="text-align:center"><b>${lbl}</b><br><span style="font-size:18px">${val}</span><br><span style="font-size:9px;color:#888">${desc}</span></td>`);
+      });
+      printWin.document.write('</tr></table>');
+    }
+
+    // Verdict
+    verdicts.forEach(v=>printWin.document.write(`<div class="verdict">${v.innerHTML}</div>`));
+
+    // Comparison cards (best use / commercial)
+    const cmpCards=card.querySelectorAll('.cmp-card');
+    if(cmpCards.length){
+      printWin.document.write('<table><thead><tr><th>Вариант</th><th>Рейтинг</th></tr></thead><tbody>');
+      cmpCards.forEach(cc=>{
+        const nm=cc.querySelector('.cc-name')?.textContent||'';
+        const sc=cc.querySelector('.cc-score')?.textContent||'';
+        printWin.document.write(`<tr><td>${nm}</td><td>${sc}</td></tr>`);
+      });
+      printWin.document.write('</tbody></table>');
+    }
+
+    printWin.document.write('</div>');
+  });
+
+  printWin.document.write(`
+  <div class="footer">
+    © 2026 Греков В.К. · Данные не являются инвестиционной рекомендацией.<br>
+    Модель описывает позиционирование субъекта внутри собственной системы.
+  </div>
+  </body></html>`);
+
+  printWin.document.close();
+  setTimeout(()=>printWin.print(),500);
+}
+
+// ══════════════════════════════════════════
+// MODE 3: AI CHAT (DeepSeek)
+// ══════════════════════════════════════════
+let chatHistory=[];
+let dsKeyValid=false;
+
+const SYSTEM_PROMPT=`Ты — AI-консультант аналитической платформы.
+
+МЕТОДОЛОГИЯ РАСЧЁТА:
+- Decision Leverage Ratio (DLR) = (Цена_бездействия / Цена_действия) × (Социальный_капитал / 100)
+- DLR > 1.5 = действие выгодно (🟢), 0.8-1.5 = наблюдение (🟡), < 0.8 = критическая зона (🔴)
+- Рыночные факторы (X) = (Чистый_поток × 0.005 × Покрытие_капиталом/100) + (Соц_капитал × 0.4) − (Конкуренция × 0.35)
+- Ресурсы инвестора (Y) = (Экспертиза × 0.45) + (Ликвидность × 0.4) − (Неопределённость × 0.5)
+- Индекс баланса = X + Y
+- Сценарии: BASE (70%) = X×1.1, Y×1.2; BULL (20%) = X×1.5, Y×2.0; BEAR (10%) = X×0.8, Y×0.7
+- Цифры не усредняются и не нормализуются под рынок
+- Каждый расчёт — индивидуальная фиксация структуры факторов
+
+ПРИНЦИПЫ:
+- "Цифры честнее букв" — всегда давай конкретные числа, расчёты, формулы
+- Не давай общих советов — считай, показывай формулы, объясняй через DLR
+- Если данных не хватает — запроси конкретные цифры
+- Отвечай на русском языке
+- Ты эксперт по рынку недвижимости России, особенно Ростов-на-Дону и Ростовская область
+- Можешь оценивать коммерческую привлекательность объектов для разных типов бизнеса
+- Помогай с расчётами ипотеки, доходности, окупаемости, ROI
+- Если спрашивают про земельный участок — помогай оценить что выгоднее построить
+
+ФОРМАТ ОТВЕТОВ:
+- Краткие, структурированные ответы
+- Используй числа и расчёты
+- Указывай DLR где применимо
+- Не более 300 слов на ответ`;
+
+async function testKey(){
+  const key=$('dsKey').value.trim();
+  if(!key){toast('Вставьте API-ключ');return;}
+  const status=$('keyStatus');
+  status.className='key-status';status.textContent='⏳ проверка...';status.style.color='var(--ylw)';
+
+  try{
+    const res=await fetch('https://api.deepseek.com/v1/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+      body:JSON.stringify({model:'deepseek-chat',messages:[{role:'user',content:'Ответь одним словом: работает'}],max_tokens:10})
+    });
+    if(res.ok){
+      dsKeyValid=true;
+      status.className='key-status ok';status.textContent='🟢 ключ активен';
+      toast('API-ключ подтверждён');
+      addMsg('system','AI-консультант готов к работе. Задайте вопрос.');
+    }else{
+      const err=await res.json().catch(()=>({}));
+      dsKeyValid=false;
+      status.className='key-status no';status.textContent='🔴 ошибка: '+(err.error?.message||res.status);
+    }
+  }catch(e){
+    dsKeyValid=false;
+    status.className='key-status no';status.textContent='🔴 нет связи с API';
+  }
+}
+
+function addMsg(type,text){
+  const msgs=$('chatMsgs');
+  const div=document.createElement('div');
+  div.className='chat-msg '+type;
+  if(type==='ai'){
+    div.innerHTML=`<div class="ai-label">AI АНАЛИТИК</div>${formatAIText(text)}`;
+  }else if(type==='user'){
+    div.textContent=text;
+  }else{
+    div.textContent=text;
+  }
+  msgs.appendChild(div);
+  msgs.scrollTop=msgs.scrollHeight;
+  return div;
+}
+
+function formatAIText(text){
+  // Basic markdown-like formatting
+  return text
+    .replace(/\*\*(.*?)\*\*/g,'<b>$1</b>')
+    .replace(/\n/g,'<br>')
+    .replace(/`(.*?)`/g,'<code style="background:rgba(201,168,76,.1);padding:1px 4px;border-radius:3px;font-family:var(--fm);font-size:10px">$1</code>');
+}
+
+function showTyping(){
+  const msgs=$('chatMsgs');
+  const div=document.createElement('div');
+  div.className='chat-msg ai';div.id='typing';
+  div.innerHTML='<div class="typing"><span></span><span></span><span></span></div>';
+  msgs.appendChild(div);
+  msgs.scrollTop=msgs.scrollHeight;
+}
+
+function hideTyping(){
+  const t=$('typing');if(t)t.remove();
+}
+
+function askPreset(text){
+  $('chatIn').value=text;
+  sendChat();
+}
+
+async function sendChat(){
+  const input=$('chatIn');
+  const text=input.value.trim();
+  if(!text)return;
+
+  const key=$('dsKey').value.trim();
+  if(!key){toast('Вставьте API-ключ DeepSeek');return;}
+
+  input.value='';
+  // iOS: blur input to hide keyboard after send
+  if(/iPhone|iPad|iPod/.test(navigator.userAgent)){input.blur();}
+  addMsg('user',text);
+
+  chatHistory.push({role:'user',content:text});
+
+  // Gather context from current calculations
+  let context='';
+  if(LR_obj){
+    context+=`\nТЕКУЩИЙ ОБЪЕКТ: Цена=${fR(LR_obj.price)}₽, Площадь=${LR_obj.area}м², Доход=${fR(LR_obj.income)}₽/мес, Расходы=${fR(LR_obj.expenses)}₽/мес, Чистый поток=${fR(LR_obj.net)}₽/мес, DLR=${LR_obj.dlr.toFixed(2)}, Доходность=${LR_obj.yld.toFixed(1)}%, Окупаемость=${LR_obj.payback===Infinity?'∞':Math.round(LR_obj.payback)+' мес'}, Индекс баланса=${LR_obj.balIdx.toFixed(1)}`;
+  }
+  if(LR_land){
+    context+=`\nТЕКУЩИЙ УЧАСТОК: Цена=${fR(LR_land.landPrice)}₽, Площадь=${LR_land.landArea} соток, Общие инвестиции=${fR(LR_land.totalInvest)}₽, Чистый поток=${fR(LR_land.netMonthly)}₽/мес, DLR=${LR_land.dlr.toFixed(2)}, Доходность=${LR_land.yld.toFixed(1)}%`;
+  }
+
+  const messages=[
+    {role:'system',content:SYSTEM_PROMPT+(context?'\n\nКОНТЕКСТ РАСЧЁТОВ ПОЛЬЗОВАТЕЛЯ:'+context:'')},
+    ...chatHistory.slice(-10) // keep last 10 messages
+  ];
+
+  const btn=$('chatSendBtn');
+  btn.disabled=true;
+  showTyping();
+
+  try{
+    const res=await fetch('https://api.deepseek.com/v1/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+      body:JSON.stringify({
+        model:'deepseek-chat',
+        messages:messages,
+        max_tokens:1000,
+        temperature:0.7,
+        stream:false
+      })
+    });
+
+    hideTyping();
+
+    if(res.ok){
+      const data=await res.json();
+      const reply=data.choices?.[0]?.message?.content||'Нет ответа';
+      chatHistory.push({role:'assistant',content:reply});
+      addMsg('ai',reply);
+    }else{
+      const err=await res.json().catch(()=>({}));
+      addMsg('system','Ошибка API: '+(err.error?.message||res.status));
+    }
+  }catch(e){
+    hideTyping();
+    addMsg('system','Ошибка соединения: '+e.message);
+  }
+
+  btn.disabled=false;
+  input.focus();
+}
+
+// ══════════════════════════════════════════
+// MODE 4: DICTAPHONE
+// ══════════════════════════════════════════
+let dicRecognition=null;
+let dicIsRecording=false;
+let dicFullText='';
+let dicInterim='';
+let dicStartTime=null;
+let dicTimerInterval=null;
+let dicSessions=[];
+let dicWaveInterval=null;
+
+function initSpeechRecognition(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){toast('Браузер не поддерживает распознавание речи. Используйте Chrome или Safari.');return null;}
+  const rec=new SR();
+  rec.lang='ru-RU';
+  rec.continuous=true;
+  rec.interimResults=true;
+  rec.maxAlternatives=1;
+
+  rec.onresult=(e)=>{
+    let interim='',final='';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      const t=e.results[i][0].transcript;
+      if(e.results[i].isFinal){final+=t+' ';}else{interim+=t;}
+    }
+    if(final){
+      dicFullText+=final;
+    }
+    dicInterim=interim;
+    updateTranscriptUI();
+  };
+
+  rec.onerror=(e)=>{
+    if(e.error==='no-speech')return;
+    if(e.error==='aborted')return;
+    console.log('Speech error:',e.error);
+    if(dicIsRecording){
+      // Auto-restart on network errors
+      setTimeout(()=>{try{rec.start();}catch(ex){}},500);
+    }
+  };
+
+  rec.onend=()=>{
+    if(dicIsRecording){
+      // Auto-restart for continuous recording
+      try{rec.start();}catch(ex){}
+    }
+  };
+
+  return rec;
+}
+
+function toggleRec(){
+  if(dicIsRecording){stopRec();}else{startRec();}
+}
+
+function startRec(){
+  if(!dicRecognition){dicRecognition=initSpeechRecognition();}
+  if(!dicRecognition)return;
+
+  dicIsRecording=true;
+  dicStartTime=Date.now();
+  dicRecognition.start();
+
+  const btn=$('recBtn');btn.classList.add('recording');
+  $('recIcon').textContent='⏹';
+  const st=$('recStatus');st.textContent='🔴 Запись...';st.className='rec-status live';
+
+  // Timer
+  dicTimerInterval=setInterval(updateTimer,1000);
+
+  // Wave animation
+  const wave=$('recWave');
+  wave.innerHTML=Array.from({length:20},()=>'<span></span>').join('');
+  dicWaveInterval=setInterval(()=>{
+    wave.querySelectorAll('span').forEach(s=>{
+      s.style.height=(4+Math.random()*28)+'px';
+    });
+  },150);
+
+  // Enable buttons
+  $('analyzeBtn').disabled=false;
+  $('copyBtn').disabled=false;
+  $('saveBtn').disabled=false;
+
+  if(!dicFullText){
+    $('dicTranscript').innerHTML='';
+  }
+}
+
+function stopRec(){
+  dicIsRecording=false;
+  if(dicRecognition){try{dicRecognition.stop();}catch(e){}}
+
+  const btn=$('recBtn');btn.classList.remove('recording');
+  $('recIcon').textContent='⏺';
+  const st=$('recStatus');st.textContent='✅ Запись остановлена';st.className='rec-status done';
+
+  clearInterval(dicTimerInterval);
+  clearInterval(dicWaveInterval);
+  const wave=$('recWave');
+  wave.querySelectorAll('span').forEach(s=>s.style.height='4px');
+
+  dicInterim='';
+  updateTranscriptUI();
+}
+
+function updateTimer(){
+  if(!dicStartTime)return;
+  const elapsed=Math.floor((Date.now()-dicStartTime)/1000);
+  const m=String(Math.floor(elapsed/60)).padStart(2,'0');
+  const s=String(elapsed%60).padStart(2,'0');
+  $('recTimer').textContent=m+':'+s;
+}
+
+function updateTranscriptUI(){
+  const el=$('dicTranscript');
+  let html='';
+  if(dicFullText){
+    // Add timestamps roughly every sentence
+    const sentences=dicFullText.trim().split(/(?<=[.!?])\s+/);
+    html=sentences.map(s=>`<span>${s} </span>`).join('');
+  }
+  if(dicInterim){
+    html+=`<span class="interim">${dicInterim}</span>`;
+  }
+  if(!html)html='<span style="color:var(--dim);font-style:italic">Здесь появится текст речи...</span>';
+  el.innerHTML=html;
+  el.scrollTop=el.scrollHeight;
+}
+
+function copyTranscript(){
+  if(!dicFullText){toast('Нет текста для копирования');return;}
+  navigator.clipboard.writeText(dicFullText.trim()).then(()=>toast('Текст скопирован'));
+}
+
+function clearDic(){
+  if(dicIsRecording)stopRec();
+  dicFullText='';dicInterim='';dicStartTime=null;
+  $('recTimer').textContent='00:00';
+  $('recStatus').textContent='Готов к записи';$('recStatus').className='rec-status idle';
+  $('dicTranscript').innerHTML='<span style="color:var(--dim);font-style:italic">Здесь появится текст речи...</span>';
+  $('dicAnalysis').innerHTML='';$('dicAnalysis').classList.remove('show');
+  $('dicName').value='';
+  $('analyzeBtn').disabled=true;$('copyBtn').disabled=true;$('saveBtn').disabled=true;
+}
+
+function saveSession(){
+  if(!dicFullText.trim()){toast('Нет текста для сохранения');return;}
+  const name=$('dicName').value.trim()||'Запись '+new Date().toLocaleString('ru-RU');
+  const analysis=$('dicAnalysis').innerHTML;
+  dicSessions.unshift({
+    name,
+    text:dicFullText.trim(),
+    analysis,
+    date:new Date().toISOString(),
+    duration:$('recTimer').textContent
+  });
+  renderSessions();
+  toast('Запись сохранена: '+name);
+}
+
+function renderSessions(){
+  const el=$('dicSessions');
+  if(!dicSessions.length){el.innerHTML='<div style="color:var(--dim);font-size:11px;font-style:italic">Пока нет сохранённых записей</div>';return;}
+  el.innerHTML=dicSessions.map((s,i)=>`
+    <div class="dic-session" onclick="loadSession(${i})">
+      <div class="ds-title">🎙 ${s.name} · ${s.duration} · ${new Date(s.date).toLocaleDateString('ru-RU')}</div>
+      <div class="ds-preview">${s.text.substring(0,100)}...</div>
+    </div>
+  `).join('');
+}
+
+function loadSession(i){
+  const s=dicSessions[i];
+  if(!s)return;
+  dicFullText=s.text;
+  $('dicName').value=s.name;
+  updateTranscriptUI();
+  if(s.analysis){$('dicAnalysis').innerHTML=s.analysis;$('dicAnalysis').classList.add('show');}
+  $('analyzeBtn').disabled=false;$('copyBtn').disabled=false;$('saveBtn').disabled=false;
+  toast('Загружена запись: '+s.name);
+}
+
+async function analyzeTranscript(){
+  if(!dicFullText.trim()){toast('Нет текста для анализа');return;}
+  const key=$('dsKey')?.value?.trim();
+  if(!key){toast('Вставьте API-ключ DeepSeek во вкладке AI-консультант');return;}
+
+  const el=$('dicAnalysis');
+  el.innerHTML='<div style="text-align:center;padding:20px;color:var(--dim)"><div class="typing" style="display:inline-flex"><span></span><span></span><span></span></div><br>Анализирую запись...</div>';
+  el.classList.add('show');
+
+  const prompt=`Проанализируй транскрипцию осмотра объекта недвижимости. Выдели ключевую информацию в следующей структуре:
+
+1. ПОЖЕЛАНИЯ КЛИЕНТА — что хочет, какие требования к объекту
+2. ПОЗИТИВНЫЕ ВПЕЧАТЛЕНИЯ — что понравилось, плюсы объекта
+3. НЕГАТИВНЫЕ ВПЕЧАТЛЕНИЯ — что не понравилось, минусы
+4. БЮДЖЕТ И УСЛОВИЯ — упоминания цены, бюджета, сроков, условий сделки
+5. КРАСНЫЕ ФЛАГИ — проблемы, риски, то что может сорвать сделку
+6. СЛЕДУЮЩИЕ ШАГИ — что нужно сделать дальше по этому объекту
+7. КРАТКОЕ РЕЗЮМЕ — 2-3 предложения итог
+
+Используй маркированные списки. Если какой-то раздел не применим — напиши "не выявлено".
+Отвечай на русском языке, кратко и по делу.
+
+ТРАНСКРИПЦИЯ:
+${dicFullText.trim()}`;
+
+  try{
+    const res=await fetch('https://api.deepseek.com/v1/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+      body:JSON.stringify({model:'deepseek-chat',messages:[
+        {role:'system',content:'Ты — AI-аналитик для риелторов. Анализируешь записи осмотров объектов недвижимости. Отвечай структурированно, кратко, по делу. Используй HTML-теги: <h4> для заголовков, <ul><li> для списков, <b> для выделения.'},
+        {role:'user',content:prompt}
+      ],max_tokens:1500,temperature:0.5})
+    });
+    if(res.ok){
+      const data=await res.json();
+      const reply=data.choices?.[0]?.message?.content||'Нет ответа';
+      // Convert markdown-like to HTML
+      let html=reply
+        .replace(/\*\*(.*?)\*\*/g,'<b>$1</b>')
+        .replace(/^### (.*$)/gm,'<h4>$1</h4>')
+        .replace(/^## (.*$)/gm,'<h4>$1</h4>')
+        .replace(/^# (.*$)/gm,'<h4>$1</h4>')
+        .replace(/^\d+\.\s*\**(.*?)\**\s*[-—:]/gm,'<h4>$1</h4>')
+        .replace(/^[-•]\s*(.*$)/gm,'<li>$1</li>')
+        .replace(/\n/g,'<br>');
+      el.innerHTML=html;
+    }else{
+      const err=await res.json().catch(()=>({}));
+      el.innerHTML=`<div style="color:var(--red)">Ошибка API: ${err.error?.message||res.status}</div>`;
+    }
+  }catch(e){
+    el.innerHTML=`<div style="color:var(--red)">Ошибка: ${e.message}</div>`;
+  }
+}
+
+// ═══ INIT ═══
+document.addEventListener('DOMContentLoaded',()=>{
+  buildObj();buildLand();
+  // Init comparison with 2 objects
+  addCmpObj();addCmpObj();
+});
+</script>
+</body>
+</html>
