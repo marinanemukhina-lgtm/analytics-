@@ -512,14 +512,14 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.3);box-shadow
 <!-- ══════════ MODE 3: AI CHAT ══════════ -->
 <div class="mpane" id="m3">
 <div class="chat-wrap">
-  <div class="sh com"><span class="dot"></span><span class="sl">AI-консультант по недвижимости</span><span class="ln"></span></div>
+  <div class="sh com"><span class="dot"></span><span class="sl">AI-консультант GigaChat по недвижимости</span><span class="ln"></span></div>
   <div class="chat-key">
-    <input type="password" class="ni" id="dsKey" placeholder="Вставьте API-ключ DeepSeek (sk-...)">
+    <input type="password" class="ni" id="dsKey" placeholder="Ключ авторизации GigaChat (Base64)">
     <button class="calc-btn" style="margin:0;padding:8px 16px;font-size:9px;min-height:48px" onclick="testKey()">Проверить</button>
     <span class="key-status no" id="keyStatus">⬤ нет ключа</span>
   </div>
   <div style="font-size:10px;color:var(--dim);margin-bottom:10px;line-height:1.6">
-    Получите бесплатный ключ на <a href="https://platform.deepseek.com" target="_blank" style="color:var(--gold)">platform.deepseek.com</a> — 5M токенов бесплатно при регистрации.
+    Ключ авторизации — строка Base64 из <a href="https://developers.sber.ru/studio" target="_blank" style="color:var(--gold)">Sber Studio</a>. После деплоя Cloudflare Worker укажите его URL в переменной <code style="font-family:var(--fm);font-size:9px;color:var(--gold)">PROXY_URL</code> в коде страницы.
   </div>
   <div class="chat-presets">
     <div class="chat-preset" onclick="askPreset('Оцени инвестиционную привлекательность квартиры 65м² за 12.5 млн ₽ в центре Ростова')">Оценка квартиры</div>
@@ -534,7 +534,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.3);box-shadow
     <input type="text" class="ni" id="chatIn" placeholder="Задайте вопрос по объекту..." onkeydown="if(event.key==='Enter')sendChat()">
     <button class="chat-send" id="chatSendBtn" onclick="sendChat()">Отправить</button>
   </div>
-  <div class="chat-hint">DeepSeek V3 · данные не сохраняются</div>
+  <div class="chat-hint">GigaChat · токен обновляется авто · данные не сохраняются</div>
 </div>
 </div>
 
@@ -1499,10 +1499,72 @@ function exportPDF(){
 }
 
 // ══════════════════════════════════════════
-// MODE 3: AI CHAT (DeepSeek)
+// MODE 3: AI CHAT (GigaChat)
 // ══════════════════════════════════════════
+
+// ── Cloudflare Worker URL ──────────────────
+// После деплоя gigachat-worker.js замените на ваш реальный URL:
+const PROXY_URL = 'https://gigachat-proxy.YOUR-SUBDOMAIN.workers.dev';
+
+// ── Токен-кэш (авто-обновление каждые 25 мин) ──
+let gcAccessToken = null;
+let gcTokenExpiry  = 0; // timestamp ms
+
+async function gcGetToken(credBase64) {
+  if (gcAccessToken && Date.now() < gcTokenExpiry) return gcAccessToken;
+
+  const res = await fetch(PROXY_URL + '/oauth', {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Basic ' + credBase64,
+      'X-Request-ID': crypto.randomUUID(),
+    },
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error('OAuth ошибка: ' + (err.message || res.status));
+  }
+
+  const data = await res.json();
+  if (!data.access_token) throw new Error('Токен не получен: ' + JSON.stringify(data));
+
+  gcAccessToken = data.access_token;
+  gcTokenExpiry  = Date.now() + 25 * 60 * 1000; // 25 мин
+  return gcAccessToken;
+}
+
+async function gcChat(credBase64, messages, maxTokens = 1000, temperature = 0.7) {
+  const token = await gcGetToken(credBase64);
+
+  const res = await fetch(PROXY_URL + '/chat', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + token,
+    },
+    body: JSON.stringify({
+      model: 'GigaChat',
+      messages,
+      max_tokens: maxTokens,
+      temperature,
+      stream: false,
+    }),
+  });
+
+  if (!res.ok) {
+    // Если токен протух — сбрасываем и пробрасываем ошибку
+    if (res.status === 401) { gcAccessToken = null; gcTokenExpiry = 0; }
+    const err = await res.json().catch(() => ({}));
+    throw new Error('Chat API ошибка ' + res.status + ': ' + (err.message || JSON.stringify(err)));
+  }
+
+  const data = await res.json();
+  return data.choices?.[0]?.message?.content || 'Нет ответа';
+}
+
 let chatHistory=[];
-let dsKeyValid=false;
+let gcKeyValid=false;
 
 const SYSTEM_PROMPT=`Ты — AI-консультант аналитической платформы.
 
@@ -1534,29 +1596,20 @@ const SYSTEM_PROMPT=`Ты — AI-консультант аналитическо
 
 async function testKey(){
   const key=$('dsKey').value.trim();
-  if(!key){toast('Вставьте API-ключ');return;}
+  if(!key){toast('Вставьте ключ авторизации GigaChat');return;}
   const status=$('keyStatus');
   status.className='key-status';status.textContent='⏳ проверка...';status.style.color='var(--ylw)';
-
+  gcAccessToken=null;gcTokenExpiry=0;
   try{
-    const res=await fetch('https://api.deepseek.com/v1/chat/completions',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
-      body:JSON.stringify({model:'deepseek-chat',messages:[{role:'user',content:'Ответь одним словом: работает'}],max_tokens:10})
-    });
-    if(res.ok){
-      dsKeyValid=true;
-      status.className='key-status ok';status.textContent='🟢 ключ активен';
-      toast('API-ключ подтверждён');
-      addMsg('system','AI-консультант готов к работе. Задайте вопрос.');
-    }else{
-      const err=await res.json().catch(()=>({}));
-      dsKeyValid=false;
-      status.className='key-status no';status.textContent='🔴 ошибка: '+(err.error?.message||res.status);
-    }
+    await gcChat(key,[{role:'user',content:'Ответь одним словом: работает'}],10,0.1);
+    gcKeyValid=true;
+    status.className='key-status ok';status.textContent='🟢 ключ активен';
+    toast('GigaChat подключён');
+    addMsg('system','AI-консультант GigaChat готов к работе. Задайте вопрос.');
   }catch(e){
-    dsKeyValid=false;
-    status.className='key-status no';status.textContent='🔴 нет связи с API';
+    gcKeyValid=false;
+    gcAccessToken=null;gcTokenExpiry=0;
+    status.className='key-status no';status.textContent='🔴 '+e.message;
   }
 }
 
@@ -1608,7 +1661,7 @@ async function sendChat(){
   if(!text)return;
 
   const key=$('dsKey').value.trim();
-  if(!key){toast('Вставьте API-ключ DeepSeek');return;}
+  if(!key){toast('Вставьте ключ авторизации GigaChat');return;}
 
   input.value='';
   // iOS: blur input to hide keyboard after send
@@ -1636,32 +1689,13 @@ async function sendChat(){
   showTyping();
 
   try{
-    const res=await fetch('https://api.deepseek.com/v1/chat/completions',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
-      body:JSON.stringify({
-        model:'deepseek-chat',
-        messages:messages,
-        max_tokens:1000,
-        temperature:0.7,
-        stream:false
-      })
-    });
-
+    const reply=await gcChat(key,messages,1000,0.7);
     hideTyping();
-
-    if(res.ok){
-      const data=await res.json();
-      const reply=data.choices?.[0]?.message?.content||'Нет ответа';
-      chatHistory.push({role:'assistant',content:reply});
-      addMsg('ai',reply);
-    }else{
-      const err=await res.json().catch(()=>({}));
-      addMsg('system','Ошибка API: '+(err.error?.message||res.status));
-    }
+    chatHistory.push({role:'assistant',content:reply});
+    addMsg('ai',reply);
   }catch(e){
     hideTyping();
-    addMsg('system','Ошибка соединения: '+e.message);
+    addMsg('system','Ошибка GigaChat: '+e.message);
   }
 
   btn.disabled=false;
@@ -1857,7 +1891,7 @@ function loadSession(i){
 async function analyzeTranscript(){
   if(!dicFullText.trim()){toast('Нет текста для анализа');return;}
   const key=$('dsKey')?.value?.trim();
-  if(!key){toast('Вставьте API-ключ DeepSeek во вкладке AI-консультант');return;}
+  if(!key){toast('Вставьте ключ GigaChat во вкладке AI');return;}
 
   const el=$('dicAnalysis');
   el.innerHTML='<div style="text-align:center;padding:20px;color:var(--dim)"><div class="typing" style="display:inline-flex"><span></span><span></span><span></span></div><br>Анализирую запись...</div>';
@@ -1880,33 +1914,22 @@ async function analyzeTranscript(){
 ${dicFullText.trim()}`;
 
   try{
-    const res=await fetch('https://api.deepseek.com/v1/chat/completions',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
-      body:JSON.stringify({model:'deepseek-chat',messages:[
-        {role:'system',content:'Ты — AI-аналитик для риелторов. Анализируешь записи осмотров объектов недвижимости. Отвечай структурированно, кратко, по делу. Используй HTML-теги: <h4> для заголовков, <ul><li> для списков, <b> для выделения.'},
-        {role:'user',content:prompt}
-      ],max_tokens:1500,temperature:0.5})
-    });
-    if(res.ok){
-      const data=await res.json();
-      const reply=data.choices?.[0]?.message?.content||'Нет ответа';
-      // Convert markdown-like to HTML
-      let html=reply
-        .replace(/\*\*(.*?)\*\*/g,'<b>$1</b>')
-        .replace(/^### (.*$)/gm,'<h4>$1</h4>')
-        .replace(/^## (.*$)/gm,'<h4>$1</h4>')
-        .replace(/^# (.*$)/gm,'<h4>$1</h4>')
-        .replace(/^\d+\.\s*\**(.*?)\**\s*[-—:]/gm,'<h4>$1</h4>')
-        .replace(/^[-•]\s*(.*$)/gm,'<li>$1</li>')
-        .replace(/\n/g,'<br>');
-      el.innerHTML=html;
-    }else{
-      const err=await res.json().catch(()=>({}));
-      el.innerHTML=`<div style="color:var(--red)">Ошибка API: ${err.error?.message||res.status}</div>`;
-    }
+    const reply=await gcChat(key,[
+      {role:'system',content:'Ты — AI-аналитик для риелторов. Анализируешь записи осмотров объектов недвижимости. Отвечай структурированно, кратко, по делу. Используй HTML-теги: <h4> для заголовков, <ul><li> для списков, <b> для выделения.'},
+      {role:'user',content:prompt}
+    ],1500,0.5);
+    // Convert markdown-like to HTML
+    let html=reply
+      .replace(/\*\*(.*?)\*\*/g,'<b>$1</b>')
+      .replace(/^### (.*$)/gm,'<h4>$1</h4>')
+      .replace(/^## (.*$)/gm,'<h4>$1</h4>')
+      .replace(/^# (.*$)/gm,'<h4>$1</h4>')
+      .replace(/^\d+\.\s*\**(.*?)\**\s*[-—:]/gm,'<h4>$1</h4>')
+      .replace(/^[-•]\s*(.*$)/gm,'<li>$1</li>')
+      .replace(/\n/g,'<br>');
+    el.innerHTML=html;
   }catch(e){
-    el.innerHTML=`<div style="color:var(--red)">Ошибка: ${e.message}</div>`;
+    el.innerHTML=`<div style="color:var(--red)">Ошибка GigaChat: ${e.message}</div>`;
   }
 }
 
